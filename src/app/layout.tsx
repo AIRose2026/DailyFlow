@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     title: "DailyFlow",
   },
   icons: {
-    icon: "/icons/icon-192.svg",
-    apple: "/icons/icon-192.svg",
+    icon: "/icons/icon-192.png",
+    apple: "/icons/icon-192.png",
   },
 };
 
