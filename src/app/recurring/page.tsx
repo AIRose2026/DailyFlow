@@ -13,7 +13,6 @@ import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 export default function RecurringPage() {
   const {
     recurringTasks,
-    completions,
     completedTodayIds,
     totalPlannedMinutesToday,
     completedMinutesToday,
@@ -35,7 +34,7 @@ export default function RecurringPage() {
       }
     >
       <div className="flex flex-col gap-6">
-        <WeekProgress recurringTasks={recurringTasks} completions={completions} />
+        <WeekProgress />
 
         {loading ? (
           <div className="flex justify-center py-10">

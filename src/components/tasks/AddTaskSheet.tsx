@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
+import { todayISODate } from "@/lib/utils/date";
 
 export function AddTaskFab({
   onCreate,
@@ -14,16 +15,22 @@ export function AddTaskFab({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [dueDate, setDueDate] = useState(todayISODate());
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    await onCreate({ title: title.trim(), category: category.trim() || null });
+    await onCreate({
+      title: title.trim(),
+      category: category.trim() || null,
+      due_date: dueDate || null,
+    });
     setSaving(false);
     setTitle("");
     setCategory("");
+    setDueDate(todayISODate());
     setOpen(false);
   }
 
@@ -73,6 +80,18 @@ export function AddTaskFab({
                   className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                 />
                 <CategorySelect value={category} onChange={setCategory} />
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor="due-date" className="text-sm text-white/60">
+                    Fällig am
+                  </label>
+                  <input
+                    id="due-date"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none [color-scheme:dark] focus:border-accent-400/60 focus:shadow-glow-sm"
+                  />
+                </div>
                 <GlowButton type="submit" disabled={saving || !title.trim()} className="mt-1">
                   {saving ? "Speichern…" : "Hinzufügen"}
                 </GlowButton>
