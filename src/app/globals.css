@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-base-950 text-white antialiased;
+  background-image: radial-gradient(
+      120% 60% at 50% -10%,
+      rgba(45, 251, 224, 0.12) 0%,
+      rgba(5, 7, 10, 0) 55%
+    ),
+    linear-gradient(180deg, #05070a 0%, #05070a 100%);
+  background-attachment: fixed;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(45, 251, 224, 0.25) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(45, 251, 224, 0.25);
+  border-radius: 999px;
+}
+
+@layer components {
+  .glass {
+    @apply border border-white/[0.06] bg-white/[0.04] backdrop-blur-xl;
+  }
+
+  .glass-card {
+    @apply glass rounded-3xl shadow-card;
+  }
+
+  .accent-text {
+    @apply text-accent-400;
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Larger tap targets everywhere on touch devices */
+button,
+a {
+  touch-action: manipulation;
+}
