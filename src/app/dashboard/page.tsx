@@ -13,9 +13,14 @@ import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
 export default function DashboardPage() {
-  const { today, overdue, categories, loading, completeTask, createTask } = useTasks();
-  const { recurringTasks, completions, totalPlannedMinutesToday, completedMinutesToday } =
-    useRecurringTasks();
+  const { today, overdue, categories, loading, error, completeTask, createTask } = useTasks();
+  const {
+    recurringTasks,
+    completions,
+    totalPlannedMinutesToday,
+    completedMinutesToday,
+    error: recurringError,
+  } = useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
 
   const filteredToday = category ? today.filter((t) => t.category === category) : today;
@@ -33,6 +38,12 @@ export default function DashboardPage() {
       }
     >
       <div className="flex flex-col gap-6">
+        {(error || recurringError) && (
+          <p className="rounded-2xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-sm text-danger-400">
+            {error ?? recurringError}
+          </p>
+        )}
+
         <WeekProgress recurringTasks={recurringTasks} completions={completions} />
 
         <CategoryFilter categories={categories} selected={category} onSelect={setCategory} />

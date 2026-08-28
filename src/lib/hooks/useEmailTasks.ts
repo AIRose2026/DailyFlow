@@ -16,19 +16,26 @@ export function useEmailTasks() {
     if (!user) return;
     setLoading(true);
 
-    const { data, error: fetchError } = await supabase
-      .from("email_tasks")
-      .select("*, task:tasks!inner(*)")
-      .eq("task.status", "open")
-      .order("created_at", { ascending: false });
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("email_tasks")
+        .select("*, task:tasks!inner(*)")
+        .eq("task.status", "open")
+        .order("created_at", { ascending: false });
 
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setEmailTasks((data as unknown as EmailTaskWithContext[]) ?? []);
-      setError(null);
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setEmailTasks((data as unknown as EmailTaskWithContext[]) ?? []);
+        setError(null);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "E-Mail-Aufgaben konnten nicht geladen werden."
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [supabase, user]);
 
   useEffect(() => {

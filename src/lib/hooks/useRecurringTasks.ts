@@ -25,33 +25,39 @@ export function useRecurringTasks() {
     if (!user) return;
     setLoading(true);
 
-    const weekStart = format(currentWeekDays()[0]!, "yyyy-MM-dd");
+    try {
+      const weekStart = format(currentWeekDays()[0]!, "yyyy-MM-dd");
 
-    const [tasksRes, completionsRes] = await Promise.all([
-      supabase
-        .from("recurring_tasks")
-        .select("*")
-        .eq("active", true)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("recurring_task_completions")
-        .select("*")
-        .gte("completed_date", weekStart),
-    ]);
+      const [tasksRes, completionsRes] = await Promise.all([
+        supabase
+          .from("recurring_tasks")
+          .select("*")
+          .eq("active", true)
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("recurring_task_completions")
+          .select("*")
+          .gte("completed_date", weekStart),
+      ]);
 
-    if (tasksRes.error) {
-      setError(tasksRes.error.message);
-    } else {
-      setRecurringTasks(tasksRes.data ?? []);
+      if (tasksRes.error) {
+        setError(tasksRes.error.message);
+      } else {
+        setRecurringTasks(tasksRes.data ?? []);
+      }
+
+      if (completionsRes.error) {
+        setError(completionsRes.error.message);
+      } else {
+        setCompletions(completionsRes.data ?? []);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Routinen konnten nicht geladen werden."
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (completionsRes.error) {
-      setError(completionsRes.error.message);
-    } else {
-      setCompletions(completionsRes.data ?? []);
-    }
-
-    setLoading(false);
   }, [supabase, user]);
 
   useEffect(() => {

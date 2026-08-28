@@ -23,19 +23,24 @@ export function useTasks() {
   const refresh = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const { data, error: fetchError } = await supabase
-      .from("tasks")
-      .select("*")
-      .eq("status", "open")
-      .order("due_date", { ascending: true, nullsFirst: false });
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("tasks")
+        .select("*")
+        .eq("status", "open")
+        .order("due_date", { ascending: true, nullsFirst: false });
 
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setTasks(data ?? []);
-      setError(null);
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setTasks(data ?? []);
+        setError(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Aufgaben konnten nicht geladen werden.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [supabase, user]);
 
   useEffect(() => {
