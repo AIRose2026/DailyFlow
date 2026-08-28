@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";
+import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 
 export function AddTaskFab({
@@ -71,12 +72,7 @@ export function AddTaskFab({
                   placeholder="Was steht an?"
                   className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                 />
-                <input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Kategorie (optional)"
-                  className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
-                />
+                <CategorySelect value={category} onChange={setCategory} />
                 <GlowButton type="submit" disabled={saving || !title.trim()} className="mt-1">
                   {saving ? "Speichern…" : "Hinzufügen"}
                 </GlowButton>

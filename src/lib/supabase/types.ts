@@ -118,6 +118,22 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["email_tasks"]["Insert"]>;
       };
+      categories: {
+        Relationships: [];
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["categories"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -136,3 +152,4 @@ export type RecurringTaskCompletion =
 export type EmailTask = Database["public"]["Tables"]["email_tasks"]["Row"];
 
 export type EmailTaskWithContext = EmailTask & { task: Task };
+export type Category = Database["public"]["Tables"]["categories"]["Row"];

@@ -4,6 +4,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { CategoryManager } from "@/components/settings/CategoryManager";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -27,6 +28,8 @@ export default function SettingsPage() {
             {user?.email ?? "—"}
           </p>
         </GlassCard>
+
+        <CategoryManager />
 
         <GlassCard className="flex flex-col gap-1 text-sm text-white/60">
           <p className="font-semibold text-white/80">Über DailyFlow</p>

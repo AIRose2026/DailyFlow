@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, X } from "lucide-react";
 import { useState } from "react";
+import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { formatMinutes } from "@/lib/utils/time";
 
@@ -78,12 +79,7 @@ export function AddRecurringTaskFab({
                   placeholder="z. B. Posteingang sichten"
                   className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                 />
-                <input
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Kategorie (optional)"
-                  className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
-                />
+                <CategorySelect value={category} onChange={setCategory} />
 
                 <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5">
                   <span className="text-sm text-white/60">Geplante Dauer</span>
