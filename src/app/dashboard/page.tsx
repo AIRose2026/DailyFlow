@@ -24,7 +24,7 @@ export default function DashboardPage() {
   return (
     <AppShell
       header={
-        <PageHeader eyebrow="Guten Tag" title="Heute">
+        <PageHeader eyebrow="Hi Henrik" title="Heute">
           <TimeStat
             plannedMinutes={totalPlannedMinutesToday}
             completedMinutes={completedMinutesToday}
