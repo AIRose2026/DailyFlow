@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { RecurringTask, RecurringTaskCompletion, Task } from "@/lib/supabase/types";
@@ -22,6 +22,7 @@ export interface DayOverview {
  */
 export function useWeekOverview() {
   const { user } = useAuth();
+  const instanceId = useId();
   const supabase = useMemo(() => createClient(), []);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
@@ -72,7 +73,7 @@ export function useWeekOverview() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("week-overview-changes")
+      .channel(`week-overview-changes-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
@@ -103,7 +104,7 @@ export function useWeekOverview() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, user, refresh]);
+  }, [supabase, user, refresh, instanceId]);
 
   const days: DayOverview[] = currentWeekDays().map((date) => {
     const iso = format(date, "yyyy-MM-dd");

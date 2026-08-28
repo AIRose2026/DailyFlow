@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { EmailTaskWithContext } from "@/lib/supabase/types";
 
 export function useEmailTasks() {
   const { user } = useAuth();
+  const instanceId = useId();
   const supabase = useMemo(() => createClient(), []);
   const [emailTasks, setEmailTasks] = useState<EmailTaskWithContext[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,7 @@ export function useEmailTasks() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("email-tasks-changes")
+      .channel(`email-tasks-changes-${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "email_tasks" },
@@ -56,7 +57,7 @@ export function useEmailTasks() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, user, refresh]);
+  }, [supabase, user, refresh, instanceId]);
 
   /**
    * Sends the user's spoken/typed reply instruction + mail context to Judith
