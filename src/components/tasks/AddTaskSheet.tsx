@@ -39,7 +39,7 @@ export function AddTaskFab({
       <button
         onClick={() => setOpen(true)}
         aria-label="Neue Aufgabe"
-        className="fixed bottom-24 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent-gradient text-base-950 shadow-glow-lg transition-transform active:scale-90"
+        className="fixed bottom-[calc(6rem+env(safe-area-inset-bottom))] right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-accent-gradient text-base-950 shadow-glow-lg transition-transform active:scale-90"
       >
         <Plus size={26} strokeWidth={2.5} />
       </button>
@@ -59,7 +59,7 @@ export function AddTaskFab({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="glass-card safe-bottom w-full max-w-md rounded-b-none p-6"
+              className="glass-card w-full max-w-md rounded-b-none px-6 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-bold">Neue Aufgabe</h2>
