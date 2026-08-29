@@ -50,7 +50,7 @@ export function VoicePromptModal({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 28, stiffness: 300 }}
-        className="glass-card safe-bottom w-full max-w-md rounded-b-none p-6"
+        className="glass-card w-full max-w-md rounded-b-none px-6 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
       >
         <div className="mb-1 flex items-center justify-between">
           <h2 className="text-lg font-bold">Antwort an Judith</h2>
