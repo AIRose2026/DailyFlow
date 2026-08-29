@@ -4,7 +4,7 @@ import { LogoMark } from "@/components/ui/Logo";
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-6 safe-top safe-bottom">
+    <main className="app-scroll flex flex-col items-center justify-center px-6 safe-top safe-bottom">
       <div className="w-full max-w-sm">
         <div className="mb-10 flex flex-col items-center gap-3">
           <LogoMark size={64} className="drop-shadow-[0_0_24px_rgba(45,251,224,0.4)]" />

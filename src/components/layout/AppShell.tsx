@@ -8,10 +8,12 @@ export function AppShell({
   header?: React.ReactNode;
 }) {
   return (
-    <div className="min-h-dvh pb-28">
-      {header}
-      <main className="mx-auto max-w-md px-4 pt-4">{children}</main>
+    <>
+      <div className="app-scroll pb-28">
+        {header}
+        <main className="mx-auto max-w-md px-4 pt-4">{children}</main>
+      </div>
       <BottomNav />
-    </div>
+    </>
   );
 }
