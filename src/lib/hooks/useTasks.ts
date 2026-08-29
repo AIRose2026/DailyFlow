@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/supabase/types";
@@ -15,7 +15,6 @@ interface NewTaskInput {
 
 export function useTasks() {
   const { user } = useAuth();
-  const instanceId = useId();
   const supabase = useMemo(() => createClient(), []);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +50,7 @@ export function useTasks() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`tasks-changes-${instanceId}`)
+      .channel("tasks-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
@@ -62,7 +61,7 @@ export function useTasks() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, user, refresh, instanceId]);
+  }, [supabase, user, refresh]);
 
   const today = tasks.filter((t) => isDueToday(t.due_date) || !t.due_date);
   const overdue = tasks.filter((t) => isOverdue(t.due_date));

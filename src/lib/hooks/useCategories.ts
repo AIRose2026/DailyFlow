@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "@/lib/supabase/types";
 
 export function useCategories() {
   const { user } = useAuth();
-  const instanceId = useId();
   const supabase = useMemo(() => createClient(), []);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +43,7 @@ export function useCategories() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`categories-changes-${instanceId}`)
+      .channel("categories-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "categories", filter: `user_id=eq.${user.id}` },
@@ -55,7 +54,7 @@ export function useCategories() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, user, refresh, instanceId]);
+  }, [supabase, user, refresh]);
 
   async function addCategory(name: string) {
     if (!user) return;

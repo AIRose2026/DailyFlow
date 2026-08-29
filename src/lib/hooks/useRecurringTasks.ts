@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { RecurringTask, RecurringTaskCompletion } from "@/lib/supabase/types";
@@ -15,7 +15,6 @@ interface NewRecurringTaskInput {
 
 export function useRecurringTasks() {
   const { user } = useAuth();
-  const instanceId = useId();
   const supabase = useMemo(() => createClient(), []);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
@@ -68,7 +67,7 @@ export function useRecurringTasks() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`recurring-changes-${instanceId}`)
+      .channel("recurring-changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "recurring_task_completions" },
@@ -84,7 +83,7 @@ export function useRecurringTasks() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, user, refresh, instanceId]);
+  }, [supabase, user, refresh]);
 
   const today = todayISODate();
   const completedTodayIds = new Set(
