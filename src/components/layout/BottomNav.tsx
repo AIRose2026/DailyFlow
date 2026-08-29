@@ -27,23 +27,16 @@ export function BottomNav() {
               href={href}
               className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors"
             >
-              <span
+              <Icon
+                size={22}
+                strokeWidth={2}
                 className={cn(
-                  "relative flex h-9 w-9 items-center justify-center rounded-2xl transition-all",
-                  active && "bg-accent-400/15 shadow-glow-sm"
+                  "transition-colors",
+                  active
+                    ? "text-accent-400 drop-shadow-[0_0_6px_rgba(45,251,224,0.6)]"
+                    : "text-white/40"
                 )}
-              >
-                <Icon
-                  size={20}
-                  strokeWidth={2}
-                  className={cn(
-                    "transition-colors",
-                    active
-                      ? "text-accent-400 drop-shadow-[0_0_6px_rgba(45,251,224,0.6)]"
-                      : "text-white/40"
-                  )}
-                />
-              </span>
+              />
               <span
                 className={cn(
                   "text-[11px] font-medium transition-colors",
