@@ -33,14 +33,16 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-1 transition-colors"
+              className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors"
             >
-              {active && (
-                <span className="absolute inset-1 -z-10 rounded-xl bg-accent-400/10 shadow-inner-glow" />
-              )}
-              <span className="relative">
+              <span
+                className={cn(
+                  "relative flex h-9 w-9 items-center justify-center rounded-2xl transition-all",
+                  active && "bg-accent-400/15 shadow-glow-sm"
+                )}
+              >
                 <Icon
-                  size={22}
+                  size={20}
                   strokeWidth={2}
                   className={cn(
                     "transition-colors",
@@ -50,7 +52,7 @@ export function BottomNav() {
                   )}
                 />
                 {!!badge && badge > 0 && (
-                  <span className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold leading-none text-white shadow-[0_0_6px_rgba(255,84,112,0.6)]">
+                  <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold leading-none text-white shadow-[0_0_6px_rgba(255,84,112,0.6)]">
                     {badge > 9 ? "9+" : badge}
                   </span>
                 )}
