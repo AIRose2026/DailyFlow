@@ -15,7 +15,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "safe-top bg-radial-fade px-4 pb-5 pt-6",
+        "bg-radial-fade px-4 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]",
         className
       )}
     >
