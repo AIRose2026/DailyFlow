@@ -67,7 +67,18 @@ Auf Judiths Seite (Langdock, nicht Teil dieses Repos):
   zugehörige `tasks`-Zeile auf `status = 'done'` setzen (Zuordnung über
   `email_tasks.outlook_flag_id`).
 
-### 3. Deployment (Vercel)
+### 3. Feedback-Button / ClickUp einrichten
+
+`CLICKUP_API_TOKEN` und `CLICKUP_LIST_ID` in `.env.local` (bzw. als
+Vercel-Umgebungsvariablen) setzen — siehe `.env.example`. Diese Werte werden
+ausschließlich serverseitig in `src/app/api/feedback/route.ts` verwendet und
+nie an den Client ausgeliefert.
+
+Der Feedback-Button (oben rechts, auf jeder App-Seite sichtbar) legt jede
+Nachricht als neue Aufgabe in der konfigurierten ClickUp-Liste an, inklusive
+Absender-E-Mail und Seite, von der aus das Feedback kam.
+
+### 4. Deployment (Vercel)
 
 Repo mit einem Vercel-Projekt verknüpfen und dieselben Umgebungsvariablen
 wie in `.env.example` in den Vercel-Projekteinstellungen hinterlegen. Builds

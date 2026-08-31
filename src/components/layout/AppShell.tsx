@@ -1,3 +1,4 @@
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { BottomNav } from "./BottomNav";
 
 export function AppShell({
@@ -20,6 +21,7 @@ export function AppShell({
           <main className="mx-auto max-w-md px-4 pt-4">{children}</main>
         </div>
       </div>
+      <FeedbackButton />
       <BottomNav />
     </>
   );
