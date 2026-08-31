@@ -82,33 +82,28 @@ body {
       );
   }
 
-  /* Bottom nav background: no hard border line, instead a soft top-to-
-     bottom fade — a teal band right at the top (over the blur, so it
-     blends into whatever content is scrolled behind it) settling into
-     solid-ish black by the bottom edge (home-indicator area). */
+  /* Bottom nav background: flat, fully opaque — no gradient, no hard
+     border line. The fade lives entirely in .nav-glow-bleed above it;
+     the nav itself is just a solid dark bar for that to fade into. */
   .nav-glow {
-    background-image: linear-gradient(
-      180deg,
-      rgba(45, 251, 224, 0.16) 0%,
-      rgba(5, 7, 10, 0.78) 40%,
-      rgba(5, 7, 10, 0.92) 100%
-    );
+    background-color: #05070a;
   }
 
-  /* Sits behind the nav bar (below it in the DOM, lower z-index), sized
-     to roughly the nav's own height and painted with that exact same
-     gradient flipped 180° — so the two form one continuous, symmetric
-     shape around the seam (matching color AND slope there) instead of
-     two independently-tuned fades that happen to meet at the same
-     value but kink at the boundary. No blur: it must never blur the
+  /* Mirrors the top header's .page-glow, upside down: fading in from
+     nothing (blending into whatever page content is above), blooming
+     into a teal glow, then fading into a solid black cap that matches
+     the nav's own flat color exactly — so by the time the nav itself
+     (opaque, z-40) takes over underneath, it's a continuation of the
+     same solid black, not a seam. No blur: it must never blur the
      floating add-buttons that sit in front of it. */
   .nav-glow-bleed {
     background-image: linear-gradient(
-      180deg,
-      rgba(5, 7, 10, 0.92) 0%,
-      rgba(5, 7, 10, 0.78) 60%,
-      rgba(45, 251, 224, 0.16) 100%
-    );
+        180deg,
+        rgba(45, 251, 224, 0) 0%,
+        rgba(45, 251, 224, 0.18) 35%,
+        rgba(45, 251, 224, 0) 60%
+      ),
+      linear-gradient(180deg, rgba(5, 7, 10, 0) 45%, #05070a 65%, #05070a 100%);
   }
 
   /* The one scrollable region per page now that body itself is fixed
