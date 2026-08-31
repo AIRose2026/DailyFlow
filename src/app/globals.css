@@ -84,3 +84,25 @@ button,
 a {
   touch-action: manipulation;
 }
+
+/* Extra bottom clearance for the home-indicator safe area — only
+   needed when actually installed to the Home Screen (standalone
+   display mode). In a regular Safari tab/bookmark, Safari already
+   reserves its own toolbar space at the bottom, so adding this on
+   top there double-counts and leaves a large excess gap. Intentionally
+   NOT inside @layer, so it wins over both Tailwind's utilities layer
+   and our own @layer components rules regardless of class order —
+   unlayered CSS always beats layered CSS in the cascade. */
+@media (display-mode: standalone) {
+  .app-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .app-sheet-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
+  }
+
+  .app-fab {
+    bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+}
