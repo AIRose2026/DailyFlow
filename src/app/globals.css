@@ -83,13 +83,13 @@ body {
   }
 
   /* Bottom nav background: no hard border line, instead a soft top-to-
-     bottom fade — a faint teal wash at the very top (over the blur, so
-     it blends into whatever content is scrolled behind it) settling
+     bottom fade — a bright teal band right at the top (over the blur,
+     so it blends into whatever content is scrolled behind it) settling
      into solid-ish black by the bottom edge (home-indicator area). */
   .nav-glow {
     background-image: linear-gradient(
       180deg,
-      rgba(45, 251, 224, 0.12) 0%,
+      rgba(45, 251, 224, 0.28) 0%,
       rgba(5, 7, 10, 0.78) 40%,
       rgba(5, 7, 10, 0.92) 100%
     );
@@ -99,17 +99,18 @@ body {
      extends the same teal wash further upward into the page content
      than the nav's own short box could on its own — this is what makes
      the fade feel continuous instead of starting abruptly at the nav's
-     top edge. Plateaus at the nav's own top-edge color by 70% so it
-     lines up with .nav-glow regardless of the nav's exact real height
-     (which varies slightly with the safe-area bottom inset). No blur:
-     it must never blur the floating add-buttons that sit in front of it. */
+     top edge. Plateaus at the nav's own top-edge color (same value as
+     .nav-glow's 0% stop) well before the bottom, so the two line up
+     regardless of the nav's exact real height (which varies slightly
+     with the safe-area bottom inset). No blur: it must never blur the
+     floating add-buttons that sit in front of it. */
   .nav-glow-bleed {
     background-image: linear-gradient(
       180deg,
       rgba(45, 251, 224, 0) 0%,
-      rgba(45, 251, 224, 0.05) 40%,
-      rgba(45, 251, 224, 0.12) 70%,
-      rgba(45, 251, 224, 0.12) 100%
+      rgba(45, 251, 224, 0.14) 45%,
+      rgba(45, 251, 224, 0.28) 75%,
+      rgba(45, 251, 224, 0.28) 100%
     );
   }
 
