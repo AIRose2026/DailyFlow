@@ -19,17 +19,20 @@ export function BottomNav() {
     <>
       {/* Decorative bleed behind the nav bar, extending the fade well
           above the nav's own (short) box so the transition from the
-          page content into the nav doesn't cut off hard. Uses the same
-          backdrop-blur as the nav itself so there's no blurred/unblurred
-          seam where the two meet. Its z-index (20) stays below the FABs
-          (z-30): backdrop-filter only affects what's painted *behind* an
-          element, and the FABs paint after (on top of) this layer, so
-          they're never blurred or tinted by it. */}
+          page content into the nav doesn't cut off hard.
+
+          Deliberately no backdrop-blur here (a real-device test showed
+          a large backdrop-blur layer this close to the floating add
+          buttons visually distorts them into an oversized blob — a
+          WebKit rendering issue, not a stacking/z-index one). The nav
+          itself also drops its own backdrop-blur below, so the two
+          layers match (no blurred/unblurred seam) without any blur
+          anywhere near the FABs. */}
       <div
         aria-hidden
-        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40 backdrop-blur-xl"
+        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40"
       />
-      <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40 backdrop-blur-xl">
+      <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40">
         <div className="mx-auto flex max-w-md items-stretch justify-between gap-1 px-2 pb-1 pt-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname?.startsWith(`${href}/`);
