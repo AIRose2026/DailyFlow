@@ -59,7 +59,7 @@ const config: Config = {
       },
       backgroundImage: {
         "radial-fade":
-          "radial-gradient(120% 120% at 50% 0%, rgba(45,251,224,0.14) 0%, rgba(5,7,10,0) 60%)",
+          "radial-gradient(130% 130% at 50% 25%, rgba(45,251,224,0.14) 0%, rgba(5,7,10,0) 60%)",
         "accent-gradient": "linear-gradient(135deg, #2dfbe0 0%, #0aad9c 100%)",
       },
       backdropBlur: {
