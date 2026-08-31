@@ -73,7 +73,6 @@ export function AddRecurringTaskFab({
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                 <input
-                  autoFocus
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="z. B. Posteingang sichten"

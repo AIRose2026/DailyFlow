@@ -101,7 +101,6 @@ export function FeedbackButton() {
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Was können wir besser machen?"
                     rows={4}
-                    autoFocus
                     className="mb-3 w-full resize-none rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-[15px] text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
 
