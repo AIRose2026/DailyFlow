@@ -82,6 +82,19 @@ body {
       );
   }
 
+  /* Bottom nav background: no hard border line, instead a soft top-to-
+     bottom fade — a faint teal wash at the very top (over the blur, so
+     it blends into whatever content is scrolled behind it) settling
+     into solid-ish black by the bottom edge (home-indicator area). */
+  .nav-glow {
+    background-image: linear-gradient(
+      180deg,
+      rgba(45, 251, 224, 0.12) 0%,
+      rgba(5, 7, 10, 0.78) 40%,
+      rgba(5, 7, 10, 0.92) 100%
+    );
+  }
+
   /* The one scrollable region per page now that body itself is fixed
      (prevents iOS's elastic overscroll bounce from detaching fixed
      elements like the bottom nav and revealing a gap behind them). */
