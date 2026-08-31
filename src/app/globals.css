@@ -9,6 +9,8 @@
 html,
 body {
   height: 100%;
+  margin: 0;
+  padding: 0;
   overscroll-behavior: none;
 }
 
@@ -92,17 +94,25 @@ a {
    top there double-counts and leaves a large excess gap. Intentionally
    NOT inside @layer, so it wins over both Tailwind's utilities layer
    and our own @layer components rules regardless of class order —
-   unlayered CSS always beats layered CSS in the cascade. */
+   unlayered CSS always beats layered CSS in the cascade.
+
+   The env() value itself is also capped with min() at 34px — the
+   standard iPhone home-indicator height. Some browser contexts are
+   known to report safe-area-inset-bottom inflated by their own
+   reserved chrome on top of the physical inset, which is exactly the
+   "double-counted" gap being fixed here; capping means we can never
+   add more than one real home-indicator's worth of space regardless
+   of what a given browser/mode reports. */
 @media (display-mode: standalone) {
   .app-bottom-nav {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: min(env(safe-area-inset-bottom), 34px);
   }
 
   .app-sheet-bottom {
-    padding-bottom: calc(env(safe-area-inset-bottom) + 1.5rem);
+    padding-bottom: calc(min(env(safe-area-inset-bottom), 34px) + 1.5rem);
   }
 
   .app-fab {
-    bottom: calc(6rem + env(safe-area-inset-bottom));
+    bottom: calc(6rem + min(env(safe-area-inset-bottom), 34px));
   }
 }
