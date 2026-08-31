@@ -17,20 +17,21 @@ export function BottomNav() {
 
   return (
     <>
-      {/* Decorative bleed behind the nav bar, extending the fade well
-          above the nav's own (short) box so the transition from the
-          page content into the nav doesn't cut off hard.
+      {/* Sits directly above the nav bar (not overlapping it — offset by
+          roughly the nav's own height) carrying that same gradient
+          flipped 180°, so together they form one continuous, symmetric
+          shape around the seam instead of two independently-tuned
+          fades that kink where they meet.
 
           Deliberately no backdrop-blur here (a real-device test showed
-          a large backdrop-blur layer this close to the floating add
-          buttons visually distorts them into an oversized blob — a
-          WebKit rendering issue, not a stacking/z-index one). The nav
-          itself also drops its own backdrop-blur below, so the two
-          layers match (no blurred/unblurred seam) without any blur
-          anywhere near the FABs. */}
+          a backdrop-blur layer this close to the floating add buttons
+          visually distorts them into an oversized blob — a WebKit
+          rendering issue, not a stacking/z-index one). The nav itself
+          also drops its own backdrop-blur below, so neither layer
+          blurs anywhere near the FABs. */}
       <div
         aria-hidden
-        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40"
+        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-16 z-20 h-24"
       />
       <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40">
         <div className="mx-auto flex max-w-md items-stretch justify-between gap-1 px-2 pb-1 pt-2">
