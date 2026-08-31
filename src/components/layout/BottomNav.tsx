@@ -19,12 +19,15 @@ export function BottomNav() {
     <>
       {/* Decorative bleed behind the nav bar, extending the fade well
           above the nav's own (short) box so the transition from the
-          page content into the nav doesn't cut off hard. No backdrop
-          blur here and a z-index below the FABs (z-30), so it never
-          blurs or tints the floating add-buttons it may sit behind. */}
+          page content into the nav doesn't cut off hard. Uses the same
+          backdrop-blur as the nav itself so there's no blurred/unblurred
+          seam where the two meet. Its z-index (20) stays below the FABs
+          (z-30): backdrop-filter only affects what's painted *behind* an
+          element, and the FABs paint after (on top of) this layer, so
+          they're never blurred or tinted by it. */}
       <div
         aria-hidden
-        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40"
+        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40 backdrop-blur-xl"
       />
       <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40 backdrop-blur-xl">
         <div className="mx-auto flex max-w-md items-stretch justify-between gap-1 px-2 pb-1 pt-2">
