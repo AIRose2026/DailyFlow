@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CategoryManager } from "@/components/settings/CategoryManager";
+import { ViewportDebug } from "@/components/settings/ViewportDebug";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -43,6 +44,8 @@ export default function SettingsPage() {
           <LogOut size={18} />
           Abmelden
         </GlowButton>
+
+        <ViewportDebug />
       </div>
     </AppShell>
   );
