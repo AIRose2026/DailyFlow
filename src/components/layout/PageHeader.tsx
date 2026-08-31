@@ -14,10 +14,7 @@ export function PageHeader({
 }) {
   return (
     <header
-      className={cn(
-        "bg-radial-fade px-4 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]",
-        className
-      )}
+      className={cn("px-4 pb-5 pt-[calc(env(safe-area-inset-top)+1.5rem)]", className)}
     >
       <div className="mx-auto max-w-md">
         <div className="mb-1 flex items-center gap-2">

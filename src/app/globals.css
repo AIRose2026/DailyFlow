@@ -64,6 +64,24 @@ body {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /* Top-of-page glow, sized independently of the header's own (content-
+     driven) height so it can bleed past the header into the page content
+     below instead of cutting off hard where the header box ends.
+     Two independent layers: an opaque black cap that fades out quickly
+     (blends with the opaque iOS status bar sitting right above it), and
+     a teal band that ramps in after the cap has mostly faded, peaks
+     around mid-height, then fades out fully by the bottom of this
+     element — so it reads as one continuous fade, not a seam. */
+  .page-glow {
+    background-image: linear-gradient(180deg, #05070a 0%, rgba(5, 7, 10, 0) 22%),
+      linear-gradient(
+        180deg,
+        rgba(45, 251, 224, 0) 10%,
+        rgba(45, 251, 224, 0.16) 45%,
+        rgba(45, 251, 224, 0) 100%
+      );
+  }
+
   /* The one scrollable region per page now that body itself is fixed
      (prevents iOS's elastic overscroll bounce from detaching fixed
      elements like the bottom nav and revealing a gap behind them). */

@@ -58,8 +58,6 @@ const config: Config = {
         card: "0 4px 30px rgba(0, 0, 0, 0.35)",
       },
       backgroundImage: {
-        "radial-fade":
-          "linear-gradient(180deg, #05070a 0%, rgba(5,7,10,0) 45%), radial-gradient(160% 160% at 50% 65%, rgba(45,251,224,0.16) 0%, rgba(5,7,10,0) 70%)",
         "accent-gradient": "linear-gradient(135deg, #2dfbe0 0%, #0aad9c 100%)",
       },
       backdropBlur: {
