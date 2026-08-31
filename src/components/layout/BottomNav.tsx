@@ -16,36 +16,47 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch justify-between gap-1 px-2 pb-1 pt-2">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname?.startsWith(`${href}/`);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors"
-            >
-              <Icon
-                size={22}
-                strokeWidth={2}
-                className={cn(
-                  "transition-colors",
-                  active ? "text-accent-400 drop-shadow-[0_0_6px_rgba(45,251,224,0.6)]" : "text-white/40"
-                )}
-              />
-              <span
-                className={cn(
-                  "text-[11px] font-medium transition-colors",
-                  active ? "text-accent-300" : "text-white/40"
-                )}
+    <>
+      {/* Decorative bleed behind the nav bar, extending the fade well
+          above the nav's own (short) box so the transition from the
+          page content into the nav doesn't cut off hard. No backdrop
+          blur here and a z-index below the FABs (z-30), so it never
+          blurs or tints the floating add-buttons it may sit behind. */}
+      <div
+        aria-hidden
+        className="nav-glow-bleed pointer-events-none fixed inset-x-0 bottom-0 z-20 h-40"
+      />
+      <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-md items-stretch justify-between gap-1 px-2 pb-1 pt-2">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || pathname?.startsWith(`${href}/`);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="relative flex min-h-[52px] flex-1 flex-col items-center justify-center gap-1 py-1 transition-colors"
               >
-                {label}
-              </span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                <Icon
+                  size={22}
+                  strokeWidth={2}
+                  className={cn(
+                    "transition-colors",
+                    active ? "text-accent-400 drop-shadow-[0_0_6px_rgba(45,251,224,0.6)]" : "text-white/40"
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-[11px] font-medium transition-colors",
+                    active ? "text-accent-300" : "text-white/40"
+                  )}
+                >
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

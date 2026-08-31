@@ -95,6 +95,24 @@ body {
     );
   }
 
+  /* Sits behind the nav bar (below it in the DOM, lower z-index) and
+     extends the same teal wash further upward into the page content
+     than the nav's own short box could on its own — this is what makes
+     the fade feel continuous instead of starting abruptly at the nav's
+     top edge. Plateaus at the nav's own top-edge color by 70% so it
+     lines up with .nav-glow regardless of the nav's exact real height
+     (which varies slightly with the safe-area bottom inset). No blur:
+     it must never blur the floating add-buttons that sit in front of it. */
+  .nav-glow-bleed {
+    background-image: linear-gradient(
+      180deg,
+      rgba(45, 251, 224, 0) 0%,
+      rgba(45, 251, 224, 0.05) 40%,
+      rgba(45, 251, 224, 0.12) 70%,
+      rgba(45, 251, 224, 0.12) 100%
+    );
+  }
+
   /* The one scrollable region per page now that body itself is fixed
      (prevents iOS's elastic overscroll bounce from detaching fixed
      elements like the bottom nav and revealing a gap behind them). */
