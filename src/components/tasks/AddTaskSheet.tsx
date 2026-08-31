@@ -5,6 +5,7 @@ import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
+import { Portal } from "@/components/ui/Portal";
 import { todayISODate } from "@/lib/utils/date";
 
 export function AddTaskFab({
@@ -44,61 +45,63 @@ export function AddTaskFab({
         <Plus size={26} strokeWidth={2.5} />
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-          >
+      <Portal>
+        <AnimatePresence>
+          {open && (
             <motion.div
-              onClick={(e) => e.stopPropagation()}
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 28, stiffness: 300 }}
-              className="glass-card w-full max-w-md rounded-b-none app-sheet-bottom px-6 pt-6 pb-6"
+              className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
             >
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold">Neue Aufgabe</h2>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Was steht an?"
-                  className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
-                />
-                <CategorySelect value={category} onChange={setCategory} />
-                <div className="flex flex-col gap-1.5">
-                  <label htmlFor="due-date" className="text-sm text-white/60">
-                    Fällig am
-                  </label>
-                  <input
-                    id="due-date"
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none [color-scheme:dark] focus:border-accent-400/60 focus:shadow-glow-sm"
-                  />
+              <motion.div
+                onClick={(e) => e.stopPropagation()}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                className="glass-card w-full max-w-md rounded-b-none app-sheet-bottom px-6 pt-6 pb-6"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold">Neue Aufgabe</h2>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <GlowButton type="submit" disabled={saving || !title.trim()} className="mt-1">
-                  {saving ? "Speichern…" : "Hinzufügen"}
-                </GlowButton>
-              </form>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Was steht an?"
+                    className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
+                  />
+                  <CategorySelect value={category} onChange={setCategory} />
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="due-date" className="text-sm text-white/60">
+                      Fällig am
+                    </label>
+                    <input
+                      id="due-date"
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none [color-scheme:dark] focus:border-accent-400/60 focus:shadow-glow-sm"
+                    />
+                  </div>
+                  <GlowButton type="submit" disabled={saving || !title.trim()} className="mt-1">
+                    {saving ? "Speichern…" : "Hinzufügen"}
+                  </GlowButton>
+                </form>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </Portal>
     </>
   );
 }
