@@ -110,12 +110,18 @@ export function useWeekOverview() {
     const dueThatDay = weekTasks.filter((t) => t.due_date === iso);
     const doneThatDay = dueThatDay.filter((t) => t.status === "done").length;
     const recurringDoneThatDay = completions.filter((c) => c.completed_date === iso).length;
+    // Only count a recurring task on days from its creation date onward —
+    // it didn't exist yet on earlier days, so those shouldn't show it as
+    // an open/undone item.
+    const recurringThatDay = recurringTasks.filter(
+      (t) => format(new Date(t.created_at), "yyyy-MM-dd") <= iso
+    );
 
     return {
       date,
       iso,
       done: doneThatDay + recurringDoneThatDay,
-      total: dueThatDay.length + recurringTasks.length,
+      total: dueThatDay.length + recurringThatDay.length,
     };
   });
 
