@@ -23,7 +23,10 @@ export function useRecurringTasks() {
   const supabase = useMemo(() => createClient(), []);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
-  const [activeTimers, setActiveTimers] = useState<RecurringTaskTimeEntry[]>([]);
+  // Today's time entries, open and closed — not just the currently running
+  // ones. A routine can be started and stopped several times a day, so the
+  // "tracked time" for it is the sum of every entry, not just the latest.
+  const [timeEntries, setTimeEntries] = useState<RecurringTaskTimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,6 +36,7 @@ export function useRecurringTasks() {
 
     try {
       const weekStart = format(currentWeekDays()[0]!, "yyyy-MM-dd");
+      const today = todayISODate();
 
       const [tasksRes, completionsRes, timersRes] = await Promise.all([
         supabase
@@ -44,7 +48,13 @@ export function useRecurringTasks() {
           .from("recurring_task_completions")
           .select("*")
           .gte("completed_date", weekStart),
-        supabase.from("recurring_task_time_entries").select("*").is("ended_at", null),
+        // Today's entries (open or closed) plus any still-open entry from an
+        // earlier date (e.g. a timer left running overnight) so it stays
+        // stoppable even though it won't count toward today's tracked total.
+        supabase
+          .from("recurring_task_time_entries")
+          .select("*")
+          .or(`entry_date.eq.${today},ended_at.is.null`),
       ]);
 
       if (tasksRes.error) {
@@ -62,7 +72,7 @@ export function useRecurringTasks() {
       if (timersRes.error) {
         setError(timersRes.error.message);
       } else {
-        setActiveTimers(timersRes.data ?? []);
+        setTimeEntries(timersRes.data ?? []);
       }
     } catch (err) {
       setError(
@@ -103,10 +113,22 @@ export function useRecurringTasks() {
     };
   }, [supabase, user, refresh]);
 
+  // Forces a re-render every 30s while any timer is running, so the
+  // aggregate "getrackt" figure in the header keeps advancing even if
+  // nothing else changes in the meantime. Minute-level display doesn't need
+  // anything finer-grained than that; the per-card live counter (which does
+  // tick every second) is handled locally in RecurringTaskCard instead.
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!timeEntries.some((e) => e.ended_at === null)) return;
+    const id = setInterval(() => setTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, [timeEntries]);
+
   const today = todayISODate();
   const now = new Date();
   // Routines that apply today (empty weekdays = every day). Only these
-  // count toward "today"'s planned/completed time and appear in the daily
+  // count toward "today"'s planned/tracked time and appear in the daily
   // list — a routine set for Tuesdays only shouldn't show as an open item
   // on a Monday.
   const todaysRecurringTasks = recurringTasks.filter((t) => routineAppliesOn(t.weekdays, now));
@@ -119,9 +141,6 @@ export function useRecurringTasks() {
     (sum, t) => sum + t.estimated_minutes,
     0
   );
-  const completedMinutesToday = todaysRecurringTasks
-    .filter((t) => completedTodayIds.has(t.id))
-    .reduce((sum, t) => sum + t.estimated_minutes, 0);
 
   function isCompletedOn(recurringTaskId: string, date: string) {
     return completions.some(
@@ -130,8 +149,33 @@ export function useRecurringTasks() {
   }
 
   function activeTimerFor(recurringTaskId: string) {
-    return activeTimers.find((t) => t.recurring_task_id === recurringTaskId);
+    return timeEntries.find((t) => t.recurring_task_id === recurringTaskId && t.ended_at === null);
   }
+
+  /**
+   * Seconds already booked today for a routine — every *closed* session,
+   * summed. Deliberately excludes a currently running session (that one
+   * ticks live in the card itself instead), so this only changes when a
+   * timer actually stops, not every second.
+   */
+  function closedSecondsTodayFor(recurringTaskId: string): number {
+    return timeEntries
+      .filter(
+        (e) =>
+          e.recurring_task_id === recurringTaskId && e.entry_date === today && e.ended_at !== null
+      )
+      .reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0);
+  }
+
+  const totalTrackedMinutesToday =
+    todaysRecurringTasks.reduce((sum, t) => {
+      const closed = closedSecondsTodayFor(t.id);
+      const active = activeTimerFor(t.id);
+      const live = active
+        ? Math.max(0, Math.round((now.getTime() - new Date(active.started_at).getTime()) / 1000))
+        : 0;
+      return sum + closed + live;
+    }, 0) / 60;
 
   async function toggleToday(recurringTaskId: string) {
     if (!user) return;
@@ -189,7 +233,7 @@ export function useRecurringTasks() {
       duration_seconds: null,
       created_at: startedAt,
     };
-    setActiveTimers((prev) => [...prev, optimistic]);
+    setTimeEntries((prev) => [...prev, optimistic]);
 
     const { data, error: insertError } = await supabase
       .from("recurring_task_time_entries")
@@ -204,16 +248,16 @@ export function useRecurringTasks() {
 
     if (insertError) {
       setError(insertError.message);
-      setActiveTimers((prev) => prev.filter((t) => t.id !== optimistic.id));
+      setTimeEntries((prev) => prev.filter((t) => t.id !== optimistic.id));
     } else if (data) {
-      setActiveTimers((prev) => prev.map((t) => (t.id === optimistic.id ? data : t)));
+      setTimeEntries((prev) => prev.map((t) => (t.id === optimistic.id ? data : t)));
     }
   }
 
   /**
-   * Stops the running timer for a routine, records how long it actually
-   * took, and — unless it's already marked done today — also completes it,
-   * since finishing the timer is the natural signal that the routine is done.
+   * Stops the running timer for a routine and records how long that session
+   * took. Deliberately does NOT touch completion status — several sessions
+   * can add up across the day, and only the checkmark marks a routine done.
    */
   async function stopTimer(recurringTaskId: string) {
     if (!user) return;
@@ -226,7 +270,13 @@ export function useRecurringTasks() {
       Math.round((endedAt.getTime() - new Date(entry.started_at).getTime()) / 1000)
     );
 
-    setActiveTimers((prev) => prev.filter((t) => t.recurring_task_id !== recurringTaskId));
+    setTimeEntries((prev) =>
+      prev.map((t) =>
+        t.id === entry.id
+          ? { ...t, ended_at: endedAt.toISOString(), duration_seconds: durationSeconds }
+          : t
+      )
+    );
 
     const { error: updateError } = await supabase
       .from("recurring_task_time_entries")
@@ -235,13 +285,8 @@ export function useRecurringTasks() {
 
     if (updateError) {
       setError(updateError.message);
+      refresh();
     }
-
-    if (!completedTodayIds.has(recurringTaskId)) {
-      await toggleToday(recurringTaskId);
-    }
-
-    refresh();
   }
 
   async function createRecurringTask(input: NewRecurringTaskInput) {
@@ -305,11 +350,12 @@ export function useRecurringTasks() {
     completions,
     completedTodayIds,
     totalPlannedMinutesToday,
-    completedMinutesToday,
+    trackedMinutesToday: totalTrackedMinutesToday,
     loading,
     error,
     isCompletedOn,
     activeTimerFor,
+    closedSecondsTodayFor,
     toggleToday,
     startTimer,
     stopTimer,

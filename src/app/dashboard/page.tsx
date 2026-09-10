@@ -17,7 +17,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { today, overdue, categories, loading, error, completeTask, deleteTask, createTask } =
     useTasks();
-  const { totalPlannedMinutesToday, completedMinutesToday, error: recurringError } =
+  const { totalPlannedMinutesToday, trackedMinutesToday, error: recurringError } =
     useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
 
@@ -35,7 +35,7 @@ export default function DashboardPage() {
         <PageHeader eyebrow={displayName ? `Hi ${displayName}` : "Hi"} title="Heute">
           <TimeStat
             plannedMinutes={totalPlannedMinutesToday}
-            completedMinutes={completedMinutesToday}
+            trackedMinutes={trackedMinutesToday}
           />
         </PageHeader>
       }

@@ -11,6 +11,7 @@ import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
 import { Spinner } from "@/components/ui/Spinner";
+import { SwipeToDeleteCard } from "@/components/ui/SwipeToDeleteCard";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import type { RecurringTask } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils/cn";
@@ -21,9 +22,10 @@ export default function RecurringPage() {
     todaysRecurringTasks,
     completedTodayIds,
     totalPlannedMinutesToday,
-    completedMinutesToday,
+    trackedMinutesToday,
     loading,
     activeTimerFor,
+    closedSecondsTodayFor,
     toggleToday,
     startTimer,
     stopTimer,
@@ -42,7 +44,7 @@ export default function RecurringPage() {
         <PageHeader eyebrow="Routinen" title="Wiederkehrende Aufgaben">
           <TimeStat
             plannedMinutes={totalPlannedMinutesToday}
-            completedMinutes={completedMinutesToday}
+            trackedMinutes={trackedMinutesToday}
           />
         </PageHeader>
       }
@@ -79,16 +81,18 @@ export default function RecurringPage() {
                       exit={{ opacity: 0, scale: 0.92 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
-                      <RecurringTaskCard
-                        task={task}
-                        done={completedTodayIds.has(task.id)}
-                        activeEntry={activeTimerFor(task.id)}
-                        onToggle={() => toggleToday(task.id)}
-                        onStartTimer={() => startTimer(task.id)}
-                        onStopTimer={() => stopTimer(task.id)}
-                        onEdit={() => setEditingTask(task)}
-                        onDeactivate={() => deactivateRecurringTask(task.id)}
-                      />
+                      <SwipeToDeleteCard onDelete={() => deactivateRecurringTask(task.id)}>
+                        <RecurringTaskCard
+                          task={task}
+                          done={completedTodayIds.has(task.id)}
+                          activeEntry={activeTimerFor(task.id)}
+                          closedSecondsToday={closedSecondsTodayFor(task.id)}
+                          onToggle={() => toggleToday(task.id)}
+                          onStartTimer={() => startTimer(task.id)}
+                          onStopTimer={() => stopTimer(task.id)}
+                          onEdit={() => setEditingTask(task)}
+                        />
+                      </SwipeToDeleteCard>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -117,17 +121,21 @@ export default function RecurringPage() {
                       className="flex flex-col gap-3 overflow-hidden"
                     >
                       {recurringTasks.map((task) => (
-                        <RecurringTaskCard
+                        <SwipeToDeleteCard
                           key={task.id}
-                          task={task}
-                          done={completedTodayIds.has(task.id)}
-                          activeEntry={activeTimerFor(task.id)}
-                          onToggle={() => toggleToday(task.id)}
-                          onStartTimer={() => startTimer(task.id)}
-                          onStopTimer={() => stopTimer(task.id)}
-                          onEdit={() => setEditingTask(task)}
-                          onDeactivate={() => deactivateRecurringTask(task.id)}
-                        />
+                          onDelete={() => deactivateRecurringTask(task.id)}
+                        >
+                          <RecurringTaskCard
+                            task={task}
+                            done={completedTodayIds.has(task.id)}
+                            activeEntry={activeTimerFor(task.id)}
+                            closedSecondsToday={closedSecondsTodayFor(task.id)}
+                            onToggle={() => toggleToday(task.id)}
+                            onStartTimer={() => startTimer(task.id)}
+                            onStopTimer={() => stopTimer(task.id)}
+                            onEdit={() => setEditingTask(task)}
+                          />
+                        </SwipeToDeleteCard>
                       ))}
                     </motion.div>
                   )}

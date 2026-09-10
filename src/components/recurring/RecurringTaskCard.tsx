@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Clock, Pencil, Play, Square, Trash2 } from "lucide-react";
+import { Check, Clock, Pencil, Play, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -26,29 +26,30 @@ export function RecurringTaskCard({
   task,
   done,
   activeEntry,
+  closedSecondsToday,
   onToggle,
   onStartTimer,
   onStopTimer,
   onEdit,
-  onDeactivate,
 }: {
   task: RecurringTask;
   done: boolean;
   activeEntry?: RecurringTaskTimeEntry;
+  /** Seconds already tracked today across earlier, already-stopped sessions. */
+  closedSecondsToday: number;
   onToggle: () => void;
   onStartTimer: () => void;
   onStopTimer: () => void;
   onEdit: () => void;
-  onDeactivate: () => void;
 }) {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [sessionSeconds, setSessionSeconds] = useState(0);
   const running = Boolean(activeEntry);
 
   useEffect(() => {
     if (!activeEntry) return;
     const startedAt = new Date(activeEntry.started_at).getTime();
     function tick() {
-      setElapsedSeconds(Math.max(0, Math.round((Date.now() - startedAt) / 1000)));
+      setSessionSeconds(Math.max(0, Math.round((Date.now() - startedAt) / 1000)));
     }
     tick();
     const id = setInterval(tick, 1000);
@@ -56,6 +57,7 @@ export function RecurringTaskCard({
   }, [activeEntry]);
 
   const schedule = weekdaysLabel(task.weekdays);
+  const trackedToday = closedSecondsToday + (running ? sessionSeconds : 0);
 
   return (
     <GlassCard
@@ -97,7 +99,10 @@ export function RecurringTaskCard({
             {task.category && <Badge tone="neutral">{task.category}</Badge>}
             {schedule && <Badge tone="neutral">{schedule}</Badge>}
             <Badge tone="accent" className="gap-1">
-              <Clock size={11} /> {formatMinutes(task.estimated_minutes)}
+              <Clock size={11} />
+              {closedSecondsToday > 0
+                ? `${formatMinutes(closedSecondsToday / 60)} getrackt`
+                : formatMinutes(task.estimated_minutes)}
             </Badge>
           </div>
         </div>
@@ -118,19 +123,11 @@ export function RecurringTaskCard({
         {running ? (
           <>
             <Square size={13} />
-            <span className="font-mono tabular-nums">{formatElapsed(elapsedSeconds)}</span>
+            <span className="font-mono tabular-nums">{formatElapsed(trackedToday)}</span>
           </>
         ) : (
           <Play size={15} />
         )}
-      </button>
-
-      <button
-        onClick={onDeactivate}
-        aria-label="Routine entfernen"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/25 transition-colors hover:text-danger-400"
-      >
-        <Trash2 size={16} />
       </button>
     </GlassCard>
   );
