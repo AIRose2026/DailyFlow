@@ -51,7 +51,9 @@ RLS-Policies und die Anbindung von Judith. Kurzfassung:
    `0002_categories.sql`, `0003_routine_scheduling_and_timers.sql`, …).
 3. Nutzer (Henrik) unter Authentication → Users anlegen.
 4. `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`
-   eintragen.
+   eintragen. Für einen zweiten Nutzer mit eigener Judith-Anbindung zusätzlich
+   `SUPABASE_SERVICE_ROLE_KEY` setzen (siehe `.env.example` und unten) —
+   ausschließlich serverseitig, nie im Client-Bundle.
 
 ### 2. Judith / Langdock einrichten
 
@@ -67,6 +69,12 @@ Auf Judiths Seite (Langdock, nicht Teil dieses Repos):
 - Nach Anlage eines Antwortentwurfs: Flag in Outlook entfernen und die
   zugehörige `tasks`-Zeile auf `status = 'done'` setzen (Zuordnung über
   `email_tasks.outlook_flag_id`).
+
+Das gilt für Henriks bestehende Routine unverändert. Für **weitere Nutzer**
+mit eigenem Langdock-Account: nicht den Service-Role-Key teilen, sondern die
+neuen `/api/ingest/*`-Endpunkte mit einem persönlichen API-Token nutzen
+(Einstellungen → "API-Token für Judith" in der App) — Details in
+[`supabase/README.md`](./supabase/README.md#adding-judith-for-a-second-or-third--user).
 
 ### 3. Feedback-Button / ClickUp einrichten
 

@@ -43,29 +43,68 @@ Judith's own Langdock configuration, never in DailyFlow's client bundle.
 
 ### Adding Judith for a second (or third, …) user
 
-Judith is currently wired to **one** Outlook mailbox → **one** DailyFlow
-`user_id`, both hardcoded into the Langdock routine's config. That `user_id`
-is *not* looked up dynamically — it's baked into whatever inserts Judith's
-Langdock routine performs. There are two ways to extend this to more people,
-depending on how many users you expect:
+Henrik's original Judith routine writes directly to the database with the
+service role key, as described above — that keeps working completely
+unchanged, no action needed for it.
 
-- **A handful of users (recommended for now):** duplicate the existing
-  Langdock routine once per person. Each copy connects to *that* person's own
-  Outlook account and inserts with *that* person's `user_id` (copy it from
-  Settings → "Nutzer-ID" in the app, or from Authentication → Users in the
-  Supabase dashboard). No DailyFlow code changes required — this is purely a
-  Langdock/Outlook configuration step, repeated per user.
+That approach doesn't extend safely to someone else's **own, separate**
+Langdock account, though: handing out the service role key to a third party's
+Langdock config would give that account (and anyone who ever compromises it)
+unrestricted read/write access to *every* user's data, not just their own.
+So for anyone beyond Henrik, use the **personal API token** flow instead —
+built for exactly this:
 
-  The "E-Mails" tab itself is hidden by default for every account (new users
-  otherwise see an always-empty inbox with no Judith behind it). Once that
-  user's routine is set up, enable the tab for them: Authentication → Users →
-  (the user) → User Metadata, add `"emails_enabled": true`. See
-  `src/lib/auth/features.ts`.
-- **Many users / self-service (bigger project, not built yet):** replace the
-  Langdock automation with DailyFlow's own backend — each user connects their
-  own Outlook account via Microsoft OAuth in Settings, tokens are stored per
-  user, and a scheduled job (e.g. a Vercel Cron job) polls each connected
-  mailbox via the Microsoft Graph API directly instead of relying on a
-  per-person Langdock routine. This removes the manual per-user Langdock setup
-  but is a meaningfully larger build (OAuth flow, token storage/refresh, its
-  own flagged-mail polling and draft-reply logic).
+1. That person logs into DailyFlow, goes to Settings → **"API-Token für
+   Judith"**, and generates a token (shown once — they copy it immediately).
+2. Their own Judith-equivalent Langdock routine (under their own Langdock
+   account, connected to their own Outlook mailbox) calls DailyFlow's ingest
+   endpoints instead of touching Supabase directly:
+
+   - **New flagged mail →** `POST https://<your-deployment>/api/ingest/email-task`
+     ```
+     Authorization: Bearer <their token>
+     Content-Type: application/json
+
+     { "subject": "...", "sender": "...", "preview": "...", "outlook_flag_id": "..." }
+     ```
+     `subject` and `sender` are required; the rest are optional. Response:
+     `{ "ok": true, "task_id": "..." }`.
+   - **Draft created / flag removed →** `POST .../api/ingest/email-task/complete`
+     ```
+     Authorization: Bearer <their token>
+     Content-Type: application/json
+
+     { "outlook_flag_id": "..." }
+     ```
+     Marks the matching task done. Each endpoint resolves the token to that
+     person's `user_id` server-side (via `SUPABASE_SERVICE_ROLE_KEY`, which
+     never leaves this deployment) and only ever reads/writes their own rows
+     — the token can't touch anyone else's data even if it's ever
+     misconfigured or leaked to the wrong place.
+
+3. The "E-Mails" tab itself is still hidden by default for every account
+   (otherwise a new user would see an always-empty inbox with nothing behind
+   it). Once their routine is wired up and sending real data, enable the tab
+   for them: Authentication → Users → (the user) → User Metadata, add
+   `"emails_enabled": true`. See `src/lib/auth/features.ts`.
+
+A revoked/deleted token (Settings → trash icon next to it) immediately stops
+working — nothing more to clean up on the Langdock side beyond removing it
+from that routine's config.
+
+**Not yet covered by this:** replying via voice ("An Judith senden" in the
+app) still always calls Henrik's Langdock agent (`LANGDOCK_API_KEY` /
+`LANGDOCK_JUDITH_AGENT_ID` are a single global pair, not per-user). A second
+person's own Judith can therefore *receive* flagged mail into DailyFlow, but
+the app's own reply-via-voice button won't reach *their* agent yet — that
+would need per-user Langdock credentials too, not built yet.
+
+### Even more users / self-service (bigger project, not built yet)
+
+Replace the Langdock automation entirely with DailyFlow's own backend — each
+user connects their own Outlook account via Microsoft OAuth in Settings,
+tokens are stored per user, and a scheduled job (e.g. a Vercel Cron job)
+polls each connected mailbox via the Microsoft Graph API directly instead of
+relying on a per-person Langdock routine at all. Removes the manual
+per-user Langdock setup but is a meaningfully larger build (OAuth flow,
+token storage/refresh, its own flagged-mail polling and draft-reply logic).

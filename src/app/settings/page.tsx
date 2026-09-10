@@ -1,11 +1,11 @@
 "use client";
 
-import { Archive, Check, ChevronRight, Copy, LogOut } from "lucide-react";
+import { Archive, ChevronRight, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ApiTokenManager } from "@/components/settings/ApiTokenManager";
 import { CategoryManager } from "@/components/settings/CategoryManager";
 import { DisplayNameEditor } from "@/components/settings/DisplayNameEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -16,19 +16,11 @@ import { hasEmailIntegration } from "@/lib/auth/features";
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const [copied, setCopied] = useState(false);
 
   async function handleSignOut() {
     await signOut();
     router.replace("/login");
     router.refresh();
-  }
-
-  async function handleCopyUserId() {
-    if (!user) return;
-    await navigator.clipboard.writeText(user.id);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -58,9 +50,11 @@ export default function SettingsPage() {
           </GlassCard>
         </Link>
 
-        <GlassCard className="flex flex-col gap-2 text-sm text-white/60">
+        <ApiTokenManager />
+
+        <GlassCard className="flex flex-col gap-1 text-sm text-white/60">
           <div className="flex items-center justify-between">
-            <p className="font-semibold text-white/80">Nutzer-ID</p>
+            <p className="font-semibold text-white/80">Über DailyFlow</p>
             <span
               className={
                 hasEmailIntegration(user)
@@ -71,28 +65,6 @@ export default function SettingsPage() {
               E-Mails {hasEmailIntegration(user) ? "aktiviert" : "nicht aktiviert"}
             </span>
           </div>
-          <p>
-            Wird gebraucht, um für diesen Account eine eigene Judith-Automatisierung
-            (E-Mails) in Langdock einzurichten. Der E-Mails-Tab erscheint erst, wenn für
-            diesen Account in Supabase (User Metadata) <code>emails_enabled: true</code> gesetzt
-            ist.
-          </p>
-          <button
-            type="button"
-            onClick={handleCopyUserId}
-            className="flex items-center justify-between gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-left"
-          >
-            <span className="truncate font-mono text-xs text-white/70">{user?.id ?? "—"}</span>
-            {copied ? (
-              <Check size={15} className="shrink-0 text-accent-400" />
-            ) : (
-              <Copy size={15} className="shrink-0 text-white/40" />
-            )}
-          </button>
-        </GlassCard>
-
-        <GlassCard className="flex flex-col gap-1 text-sm text-white/60">
-          <p className="font-semibold text-white/80">Über DailyFlow</p>
           <p>
             To-dos, wiederkehrende Aufgaben und per Flag markierte Outlook-Mails an einem
             Ort — synchronisiert über Judith (Langdock).
