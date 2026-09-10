@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Archive, ChevronRight, LogOut } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -30,6 +31,19 @@ export default function SettingsPage() {
         </GlassCard>
 
         <CategoryManager />
+
+        <Link href="/archive">
+          <GlassCard className="flex items-center gap-3 py-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-400/10 text-accent-400">
+              <Archive size={18} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold text-white">Archiv</p>
+              <p className="text-xs text-white/40">Erledigte Aufgaben ansehen und löschen</p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-white/25" />
+          </GlassCard>
+        </Link>
 
         <GlassCard className="flex flex-col gap-1 text-sm text-white/60">
           <p className="font-semibold text-white/80">Über DailyFlow</p>

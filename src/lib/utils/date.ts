@@ -49,14 +49,14 @@ export function formatWeekdayShort(date: Date): string {
   return format(date, "EEEEEE", { locale: de });
 }
 
-export function currentWeekDays(): Date[] {
-  const start = startOfWeek(new Date(), { weekStartsOn: 1 });
+export function currentWeekDays(reference: Date = new Date()): Date[] {
+  const start = startOfWeek(reference, { weekStartsOn: 1 });
   return Array.from({ length: 7 }, (_, i) => addDays(start, i));
 }
 
-export function weekRangeLabel(): string {
-  const start = startOfWeek(new Date(), { weekStartsOn: 1 });
-  const end = endOfWeek(new Date(), { weekStartsOn: 1 });
+export function weekRangeLabel(reference: Date = new Date()): string {
+  const start = startOfWeek(reference, { weekStartsOn: 1 });
+  const end = endOfWeek(reference, { weekStartsOn: 1 });
   return `${format(start, "d. MMM", { locale: de })} – ${format(end, "d. MMM", {
     locale: de,
   })}`;
