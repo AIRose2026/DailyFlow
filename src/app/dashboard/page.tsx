@@ -9,15 +9,22 @@ import { TaskList } from "@/components/tasks/TaskList";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const { today, overdue, categories, loading, error, completeTask, deleteTask, createTask } =
     useTasks();
   const { totalPlannedMinutesToday, completedMinutesToday, error: recurringError } =
     useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
+
+  const displayName =
+    (user?.user_metadata?.display_name as string | undefined)?.trim() ||
+    user?.email?.split("@")[0] ||
+    "";
 
   const filteredToday = category ? today.filter((t) => t.category === category) : today;
   const filteredOverdue = category ? overdue.filter((t) => t.category === category) : overdue;
@@ -25,7 +32,7 @@ export default function DashboardPage() {
   return (
     <AppShell
       header={
-        <PageHeader eyebrow="Hi Henrik" title="Heute">
+        <PageHeader eyebrow={displayName ? `Hi ${displayName}` : "Hi"} title="Heute">
           <TimeStat
             plannedMinutes={totalPlannedMinutesToday}
             completedMinutes={completedMinutesToday}
