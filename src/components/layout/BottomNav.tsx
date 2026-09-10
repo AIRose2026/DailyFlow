@@ -3,18 +3,29 @@
 import { BarChart3, CalendarClock, LayoutGrid, Mail, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasEmailIntegration } from "@/lib/auth/features";
 import { cn } from "@/lib/utils/cn";
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { href: "/dashboard", label: "Heute", icon: LayoutGrid },
   { href: "/recurring", label: "Routinen", icon: CalendarClock },
   { href: "/statistics", label: "Statistik", icon: BarChart3 },
-  { href: "/emails", label: "E-Mails", icon: Mail },
-  { href: "/settings", label: "Mehr", icon: Settings },
 ] as const;
+
+const EMAILS_NAV_ITEM = { href: "/emails", label: "E-Mails", icon: Mail } as const;
+
+const SETTINGS_NAV_ITEM = { href: "/settings", label: "Mehr", icon: Settings } as const;
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const navItems = [
+    ...BASE_NAV_ITEMS,
+    ...(hasEmailIntegration(user) ? [EMAILS_NAV_ITEM] : []),
+    SETTINGS_NAV_ITEM,
+  ];
 
   return (
     <>
@@ -36,7 +47,7 @@ export function BottomNav() {
       />
       <nav className="app-bottom-nav nav-glow fixed inset-x-0 bottom-0 z-40">
         <div className="mx-auto flex max-w-md items-stretch justify-between gap-0.5 px-1 pb-1 pt-2">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname?.startsWith(`${href}/`);
             return (
               <Link

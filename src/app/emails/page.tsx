@@ -7,12 +7,25 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { EmailTaskCard } from "@/components/emails/EmailTaskCard";
 import { VoicePromptModal } from "@/components/emails/VoicePromptModal";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasEmailIntegration } from "@/lib/auth/features";
 import { useEmailTasks } from "@/lib/hooks/useEmailTasks";
 import type { EmailTaskWithContext } from "@/lib/supabase/types";
 
 export default function EmailsPage() {
+  const { user } = useAuth();
   const { emailTasks, loading, sendPromptToJudith } = useEmailTasks();
   const [active, setActive] = useState<EmailTaskWithContext | null>(null);
+
+  if (!hasEmailIntegration(user)) {
+    return (
+      <AppShell header={<PageHeader eyebrow="Mehr" title="E-Mails" backHref="/settings" />}>
+        <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+          Die E-Mail-Integration (Judith) ist für diesen Account nicht aktiviert.
+        </p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell

@@ -55,6 +55,12 @@ depending on how many users you expect:
   Settings → "Nutzer-ID" in the app, or from Authentication → Users in the
   Supabase dashboard). No DailyFlow code changes required — this is purely a
   Langdock/Outlook configuration step, repeated per user.
+
+  The "E-Mails" tab itself is hidden by default for every account (new users
+  otherwise see an always-empty inbox with no Judith behind it). Once that
+  user's routine is set up, enable the tab for them: Authentication → Users →
+  (the user) → User Metadata, add `"emails_enabled": true`. See
+  `src/lib/auth/features.ts`.
 - **Many users / self-service (bigger project, not built yet):** replace the
   Langdock automation with DailyFlow's own backend — each user connects their
   own Outlook account via Microsoft OAuth in Settings, tokens are stored per

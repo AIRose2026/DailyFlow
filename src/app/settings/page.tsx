@@ -11,6 +11,7 @@ import { DisplayNameEditor } from "@/components/settings/DisplayNameEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasEmailIntegration } from "@/lib/auth/features";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -58,10 +59,23 @@ export default function SettingsPage() {
         </Link>
 
         <GlassCard className="flex flex-col gap-2 text-sm text-white/60">
-          <p className="font-semibold text-white/80">Nutzer-ID</p>
+          <div className="flex items-center justify-between">
+            <p className="font-semibold text-white/80">Nutzer-ID</p>
+            <span
+              className={
+                hasEmailIntegration(user)
+                  ? "text-xs font-medium text-accent-400"
+                  : "text-xs font-medium text-white/30"
+              }
+            >
+              E-Mails {hasEmailIntegration(user) ? "aktiviert" : "nicht aktiviert"}
+            </span>
+          </div>
           <p>
             Wird gebraucht, um für diesen Account eine eigene Judith-Automatisierung
-            (E-Mails) in Langdock einzurichten.
+            (E-Mails) in Langdock einzurichten. Der E-Mails-Tab erscheint erst, wenn für
+            diesen Account in Supabase (User Metadata) <code>emails_enabled: true</code> gesetzt
+            ist.
           </p>
           <button
             type="button"
