@@ -20,6 +20,7 @@ export default function RecurringPage() {
   const {
     recurringTasks,
     todaysRecurringTasks,
+    openTodaysRecurringTasks,
     completedTodayIds,
     totalPlannedMinutesToday,
     trackedMinutesToday,
@@ -64,15 +65,19 @@ export default function RecurringPage() {
           <>
             <div className="flex flex-col gap-3">
               <h2 className="text-sm font-semibold text-white/70">
-                Heute · {todaysRecurringTasks.length}
+                Heute · {openTodaysRecurringTasks.length}
               </h2>
               {todaysRecurringTasks.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
                   Heute steht keine Routine an.
                 </p>
+              ) : openTodaysRecurringTasks.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                  Für heute sind alle Routinen erledigt. 🎉
+                </p>
               ) : (
                 <AnimatePresence initial={false}>
-                  {todaysRecurringTasks.map((task) => (
+                  {openTodaysRecurringTasks.map((task) => (
                     <motion.div
                       key={task.id}
                       layout

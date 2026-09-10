@@ -137,6 +137,13 @@ export function useRecurringTasks() {
     completions.filter((c) => c.completed_date === today).map((c) => c.recurring_task_id)
   );
 
+  // Today's list only shows what's still open — once checked off, a
+  // routine drops out of here the same way a completed task drops out of
+  // "Heute" (it's still around, just via the Archiv from then on).
+  const openTodaysRecurringTasks = todaysRecurringTasks.filter(
+    (t) => !completedTodayIds.has(t.id)
+  );
+
   const totalPlannedMinutesToday = todaysRecurringTasks.reduce(
     (sum, t) => sum + t.estimated_minutes,
     0
@@ -347,6 +354,7 @@ export function useRecurringTasks() {
   return {
     recurringTasks,
     todaysRecurringTasks,
+    openTodaysRecurringTasks,
     completions,
     completedTodayIds,
     totalPlannedMinutesToday,
