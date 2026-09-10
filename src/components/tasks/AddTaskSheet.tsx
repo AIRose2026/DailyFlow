@@ -1,12 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus, X } from "lucide-react";
+import { CalendarPlus, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
-import { todayISODate } from "@/lib/utils/date";
 
 export function AddTaskFab({
   onCreate,
@@ -16,8 +15,20 @@ export function AddTaskFab({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
-  const [dueDate, setDueDate] = useState(todayISODate());
+  // Reminders default to no date (see project note: only explicitly dated
+  // tasks show a due date; everything else is "Heute" the day it's created
+  // and moves to "Überfällig" the day after). The date field stays
+  // collapsed until the user opts in.
+  const [showDate, setShowDate] = useState(false);
+  const [dueDate, setDueDate] = useState("");
   const [saving, setSaving] = useState(false);
+
+  function resetForm() {
+    setTitle("");
+    setCategory("");
+    setShowDate(false);
+    setDueDate("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,12 +37,10 @@ export function AddTaskFab({
     await onCreate({
       title: title.trim(),
       category: category.trim() || null,
-      due_date: dueDate || null,
+      due_date: showDate && dueDate ? dueDate : null,
     });
     setSaving(false);
-    setTitle("");
-    setCategory("");
-    setDueDate(todayISODate());
+    resetForm();
     setOpen(false);
   }
 
@@ -81,18 +90,44 @@ export function AddTaskFab({
                     className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
                   <CategorySelect value={category} onChange={setCategory} />
-                  <div className="flex flex-col gap-1.5">
-                    <label htmlFor="due-date" className="text-sm text-white/60">
-                      Fällig am
-                    </label>
-                    <input
-                      id="due-date"
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none [color-scheme:dark] focus:border-accent-400/60 focus:shadow-glow-sm"
-                    />
-                  </div>
+
+                  {showDate ? (
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <label htmlFor="due-date" className="text-sm text-white/60">
+                          Fällig am
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowDate(false);
+                            setDueDate("");
+                          }}
+                          className="text-xs text-white/40 underline underline-offset-2"
+                        >
+                          Entfernen
+                        </button>
+                      </div>
+                      <input
+                        id="due-date"
+                        type="date"
+                        value={dueDate}
+                        onChange={(e) => setDueDate(e.target.value)}
+                        autoFocus
+                        className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none [color-scheme:dark] focus:border-accent-400/60 focus:shadow-glow-sm"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowDate(true)}
+                      className="flex items-center gap-2 self-start rounded-2xl border border-dashed border-white/15 px-4 py-2.5 text-sm text-white/50 transition-colors active:scale-[0.97]"
+                    >
+                      <CalendarPlus size={16} />
+                      Datum festlegen (optional)
+                    </button>
+                  )}
+
                   <GlowButton type="submit" disabled={saving || !title.trim()} className="mt-1">
                     {saving ? "Speichern…" : "Hinzufügen"}
                   </GlowButton>

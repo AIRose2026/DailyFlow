@@ -45,6 +45,9 @@ export interface Database {
           category: string | null;
           estimated_minutes: number;
           active: boolean;
+          // ISO weekdays (1 = Monday .. 7 = Sunday) this routine applies to.
+          // Empty array = every day.
+          weekdays: number[];
           created_at: string;
         };
         Insert: {
@@ -54,6 +57,7 @@ export interface Database {
           category?: string | null;
           estimated_minutes?: number;
           active?: boolean;
+          weekdays?: number[];
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["recurring_tasks"]["Insert"]>;
@@ -84,6 +88,40 @@ export interface Database {
         };
         Update: Partial<
           Database["public"]["Tables"]["recurring_task_completions"]["Insert"]
+        >;
+      };
+      recurring_task_time_entries: {
+        Relationships: [
+          {
+            foreignKeyName: "recurring_task_time_entries_recurring_task_id_fkey";
+            columns: ["recurring_task_id"];
+            isOneToOne: false;
+            referencedRelation: "recurring_tasks";
+            referencedColumns: ["id"];
+          },
+        ];
+        Row: {
+          id: string;
+          recurring_task_id: string;
+          user_id: string;
+          entry_date: string;
+          started_at: string;
+          ended_at: string | null;
+          duration_seconds: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recurring_task_id: string;
+          user_id: string;
+          entry_date: string;
+          started_at: string;
+          ended_at?: string | null;
+          duration_seconds?: number | null;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["recurring_task_time_entries"]["Insert"]
         >;
       };
       email_tasks: {
@@ -149,6 +187,8 @@ export type Task = Database["public"]["Tables"]["tasks"]["Row"];
 export type RecurringTask = Database["public"]["Tables"]["recurring_tasks"]["Row"];
 export type RecurringTaskCompletion =
   Database["public"]["Tables"]["recurring_task_completions"]["Row"];
+export type RecurringTaskTimeEntry =
+  Database["public"]["Tables"]["recurring_task_time_entries"]["Row"];
 export type EmailTask = Database["public"]["Tables"]["email_tasks"]["Row"];
 
 export type EmailTaskWithContext = EmailTask & { task: Task };

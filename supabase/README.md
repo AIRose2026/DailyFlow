@@ -1,7 +1,8 @@
 # DailyFlow – Supabase Setup
 
 1. Create a Supabase project (Postgres + Auth + Realtime).
-2. Apply the schema in [`migrations/0001_init.sql`](./migrations/0001_init.sql), e.g.:
+2. Apply every file in [`migrations/`](./migrations) in order (`0001_init.sql`,
+   `0002_categories.sql`, `0003_routine_scheduling_and_timers.sql`, …), e.g.:
 
    ```bash
    supabase link --project-ref <project-ref>

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { RecurringTask, RecurringTaskCompletion, Task } from "@/lib/supabase/types";
-import { currentWeekDays } from "@/lib/utils/date";
+import { currentWeekDays, routineAppliesOn } from "@/lib/utils/date";
 
 export interface DayOverview {
   date: Date;
@@ -110,11 +110,11 @@ export function useWeekOverview() {
     const dueThatDay = weekTasks.filter((t) => t.due_date === iso);
     const doneThatDay = dueThatDay.filter((t) => t.status === "done").length;
     const recurringDoneThatDay = completions.filter((c) => c.completed_date === iso).length;
-    // Only count a recurring task on days from its creation date onward —
-    // it didn't exist yet on earlier days, so those shouldn't show it as
-    // an open/undone item.
+    // Only count a recurring task on days from its creation date onward (it
+    // didn't exist yet on earlier days) and only on the weekdays it's
+    // actually scheduled for (empty weekdays = every day).
     const recurringThatDay = recurringTasks.filter(
-      (t) => format(new Date(t.created_at), "yyyy-MM-dd") <= iso
+      (t) => format(new Date(t.created_at), "yyyy-MM-dd") <= iso && routineAppliesOn(t.weekdays, date)
     );
 
     return {

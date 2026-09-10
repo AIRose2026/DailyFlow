@@ -3,14 +3,19 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
-import type { RecurringTask, RecurringTaskCompletion } from "@/lib/supabase/types";
-import { currentWeekDays, todayISODate } from "@/lib/utils/date";
+import type {
+  RecurringTask,
+  RecurringTaskCompletion,
+  RecurringTaskTimeEntry,
+} from "@/lib/supabase/types";
+import { currentWeekDays, routineAppliesOn, todayISODate } from "@/lib/utils/date";
 import { format } from "date-fns";
 
 interface NewRecurringTaskInput {
   title: string;
   category?: string | null;
   estimated_minutes: number;
+  weekdays?: number[];
 }
 
 export function useRecurringTasks() {
@@ -18,6 +23,7 @@ export function useRecurringTasks() {
   const supabase = useMemo(() => createClient(), []);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
+  const [activeTimers, setActiveTimers] = useState<RecurringTaskTimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,7 +34,7 @@ export function useRecurringTasks() {
     try {
       const weekStart = format(currentWeekDays()[0]!, "yyyy-MM-dd");
 
-      const [tasksRes, completionsRes] = await Promise.all([
+      const [tasksRes, completionsRes, timersRes] = await Promise.all([
         supabase
           .from("recurring_tasks")
           .select("*")
@@ -38,6 +44,7 @@ export function useRecurringTasks() {
           .from("recurring_task_completions")
           .select("*")
           .gte("completed_date", weekStart),
+        supabase.from("recurring_task_time_entries").select("*").is("ended_at", null),
       ]);
 
       if (tasksRes.error) {
@@ -50,6 +57,12 @@ export function useRecurringTasks() {
         setError(completionsRes.error.message);
       } else {
         setCompletions(completionsRes.data ?? []);
+      }
+
+      if (timersRes.error) {
+        setError(timersRes.error.message);
+      } else {
+        setActiveTimers(timersRes.data ?? []);
       }
     } catch (err) {
       setError(
@@ -78,6 +91,11 @@ export function useRecurringTasks() {
         { event: "*", schema: "public", table: "recurring_tasks" },
         () => refresh()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "recurring_task_time_entries" },
+        () => refresh()
+      )
       .subscribe();
 
     return () => {
@@ -86,15 +104,22 @@ export function useRecurringTasks() {
   }, [supabase, user, refresh]);
 
   const today = todayISODate();
+  const now = new Date();
+  // Routines that apply today (empty weekdays = every day). Only these
+  // count toward "today"'s planned/completed time and appear in the daily
+  // list — a routine set for Tuesdays only shouldn't show as an open item
+  // on a Monday.
+  const todaysRecurringTasks = recurringTasks.filter((t) => routineAppliesOn(t.weekdays, now));
+
   const completedTodayIds = new Set(
     completions.filter((c) => c.completed_date === today).map((c) => c.recurring_task_id)
   );
 
-  const totalPlannedMinutesToday = recurringTasks.reduce(
+  const totalPlannedMinutesToday = todaysRecurringTasks.reduce(
     (sum, t) => sum + t.estimated_minutes,
     0
   );
-  const completedMinutesToday = recurringTasks
+  const completedMinutesToday = todaysRecurringTasks
     .filter((t) => completedTodayIds.has(t.id))
     .reduce((sum, t) => sum + t.estimated_minutes, 0);
 
@@ -102,6 +127,10 @@ export function useRecurringTasks() {
     return completions.some(
       (c) => c.recurring_task_id === recurringTaskId && c.completed_date === date
     );
+  }
+
+  function activeTimerFor(recurringTaskId: string) {
+    return activeTimers.find((t) => t.recurring_task_id === recurringTaskId);
   }
 
   async function toggleToday(recurringTaskId: string) {
@@ -144,6 +173,77 @@ export function useRecurringTasks() {
     }
   }
 
+  /** Starts a timing session for a routine (persisted so it survives a reload). */
+  async function startTimer(recurringTaskId: string) {
+    if (!user) return;
+    if (activeTimerFor(recurringTaskId)) return;
+
+    const startedAt = new Date().toISOString();
+    const optimistic: RecurringTaskTimeEntry = {
+      id: `optimistic-${recurringTaskId}-${startedAt}`,
+      recurring_task_id: recurringTaskId,
+      user_id: user.id,
+      entry_date: today,
+      started_at: startedAt,
+      ended_at: null,
+      duration_seconds: null,
+      created_at: startedAt,
+    };
+    setActiveTimers((prev) => [...prev, optimistic]);
+
+    const { data, error: insertError } = await supabase
+      .from("recurring_task_time_entries")
+      .insert({
+        recurring_task_id: recurringTaskId,
+        user_id: user.id,
+        entry_date: today,
+        started_at: startedAt,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+      setActiveTimers((prev) => prev.filter((t) => t.id !== optimistic.id));
+    } else if (data) {
+      setActiveTimers((prev) => prev.map((t) => (t.id === optimistic.id ? data : t)));
+    }
+  }
+
+  /**
+   * Stops the running timer for a routine, records how long it actually
+   * took, and — unless it's already marked done today — also completes it,
+   * since finishing the timer is the natural signal that the routine is done.
+   */
+  async function stopTimer(recurringTaskId: string) {
+    if (!user) return;
+    const entry = activeTimerFor(recurringTaskId);
+    if (!entry) return;
+
+    const endedAt = new Date();
+    const durationSeconds = Math.max(
+      0,
+      Math.round((endedAt.getTime() - new Date(entry.started_at).getTime()) / 1000)
+    );
+
+    setActiveTimers((prev) => prev.filter((t) => t.recurring_task_id !== recurringTaskId));
+
+    const { error: updateError } = await supabase
+      .from("recurring_task_time_entries")
+      .update({ ended_at: endedAt.toISOString(), duration_seconds: durationSeconds })
+      .eq("id", entry.id);
+
+    if (updateError) {
+      setError(updateError.message);
+    }
+
+    if (!completedTodayIds.has(recurringTaskId)) {
+      await toggleToday(recurringTaskId);
+    }
+
+    refresh();
+  }
+
   async function createRecurringTask(input: NewRecurringTaskInput) {
     if (!user) return;
     const { error: insertError } = await supabase.from("recurring_tasks").insert({
@@ -151,6 +251,7 @@ export function useRecurringTasks() {
       title: input.title,
       category: input.category ?? null,
       estimated_minutes: input.estimated_minutes,
+      weekdays: input.weekdays ?? [],
       active: true,
     });
     if (insertError) {
@@ -174,6 +275,7 @@ export function useRecurringTasks() {
 
   return {
     recurringTasks,
+    todaysRecurringTasks,
     completions,
     completedTodayIds,
     totalPlannedMinutesToday,
@@ -181,7 +283,10 @@ export function useRecurringTasks() {
     loading,
     error,
     isCompletedOn,
+    activeTimerFor,
     toggleToday,
+    startTimer,
+    stopTimer,
     createRecurringTask,
     deactivateRecurringTask,
     refresh,

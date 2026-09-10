@@ -47,7 +47,8 @@ Siehe [`supabase/README.md`](./supabase/README.md) für Schema-Migration,
 RLS-Policies und die Anbindung von Judith. Kurzfassung:
 
 1. Supabase-Projekt anlegen.
-2. `supabase/migrations/0001_init.sql` anwenden.
+2. Alle Dateien in `supabase/migrations/` der Reihe nach anwenden (`0001_init.sql`,
+   `0002_categories.sql`, `0003_routine_scheduling_and_timers.sql`, …).
 3. Nutzer (Henrik) unter Authentication → Users anlegen.
 4. `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`
    eintragen.

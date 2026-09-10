@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/supabase/types";
-import { isDueToday, isOverdue, todayISODate } from "@/lib/utils/date";
+import { isDueToday, isOverdue } from "@/lib/utils/date";
 
 interface NewTaskInput {
   title: string;
@@ -63,10 +63,13 @@ export function useTasks() {
     };
   }, [supabase, user, refresh]);
 
-  const today = tasks.filter((t) => isDueToday(t.due_date) || !t.due_date);
-  const overdue = tasks.filter((t) => isOverdue(t.due_date));
+  const today = tasks.filter((t) => isDueToday(t.due_date, t.created_at));
+  const overdue = tasks.filter((t) => isOverdue(t.due_date, t.created_at));
   const upcoming = tasks.filter(
-    (t) => t.due_date && !isDueToday(t.due_date) && !isOverdue(t.due_date)
+    (t) =>
+      t.due_date &&
+      !isDueToday(t.due_date, t.created_at) &&
+      !isOverdue(t.due_date, t.created_at)
   );
 
   const categories = Array.from(
@@ -92,7 +95,7 @@ export function useTasks() {
       title: input.title,
       description: input.description ?? null,
       category: input.category ?? null,
-      due_date: input.due_date ?? todayISODate(),
+      due_date: input.due_date ?? null,
       status: "open",
       source: "manual",
     });

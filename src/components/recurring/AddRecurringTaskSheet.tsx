@@ -6,7 +6,9 @@ import { useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
+import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
+import { cn } from "@/lib/utils/cn";
 
 export function AddRecurringTaskFab({
   onCreate,
@@ -15,23 +17,38 @@ export function AddRecurringTaskFab({
     title: string;
     category?: string | null;
     estimated_minutes: number;
+    weekdays?: number[];
   }) => Promise<void>;
 }) {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [minutes, setMinutes] = useState(15);
+  // Empty = every day.
+  const [weekdays, setWeekdays] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
+
+  function toggleWeekday(value: number) {
+    setWeekdays((prev) =>
+      prev.includes(value) ? prev.filter((d) => d !== value) : [...prev, value].sort()
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
     setSaving(true);
-    await onCreate({ title: title.trim(), category: category.trim() || null, estimated_minutes: minutes });
+    await onCreate({
+      title: title.trim(),
+      category: category.trim() || null,
+      estimated_minutes: minutes,
+      weekdays,
+    });
     setSaving(false);
     setTitle("");
     setCategory("");
     setMinutes(15);
+    setWeekdays([]);
     setOpen(false);
   }
 
@@ -81,6 +98,42 @@ export function AddRecurringTaskFab({
                     className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
                   <CategorySelect value={category} onChange={setCategory} />
+
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm text-white/60">Wiederholt sich</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setWeekdays([])}
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-sm font-medium transition-all",
+                          weekdays.length === 0
+                            ? "border-accent-400/50 bg-accent-400/15 text-accent-300 shadow-glow-sm"
+                            : "border-white/10 bg-white/[0.03] text-white/60"
+                        )}
+                      >
+                        Jeden Tag
+                      </button>
+                      {WEEKDAY_OPTIONS.map((day) => {
+                        const active = weekdays.includes(day.value);
+                        return (
+                          <button
+                            key={day.value}
+                            type="button"
+                            onClick={() => toggleWeekday(day.value)}
+                            className={cn(
+                              "flex h-9 w-9 items-center justify-center rounded-full border text-sm font-medium transition-all",
+                              active
+                                ? "border-accent-400/50 bg-accent-400/15 text-accent-300 shadow-glow-sm"
+                                : "border-white/10 bg-white/[0.03] text-white/60"
+                            )}
+                          >
+                            {day.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
                   <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5">
                     <span className="text-sm text-white/60">Geplante Dauer</span>

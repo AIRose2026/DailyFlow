@@ -5,7 +5,7 @@ import type { Task } from "@/lib/supabase/types";
 import { formatDueDate, isOverdue } from "@/lib/utils/date";
 
 export function TaskCard({ task }: { task: Task }) {
-  const overdue = isOverdue(task.due_date);
+  const overdue = isOverdue(task.due_date, task.created_at);
 
   return (
     <GlassCard className="flex items-start gap-3 py-4">
@@ -21,8 +21,10 @@ export function TaskCard({ task }: { task: Task }) {
         )}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {task.category && <Badge tone="neutral">{task.category}</Badge>}
-          {task.due_date && (
+          {task.due_date ? (
             <Badge tone={overdue ? "danger" : "accent"}>{formatDueDate(task.due_date)}</Badge>
+          ) : (
+            overdue && <Badge tone="danger">Überfällig</Badge>
           )}
         </div>
       </div>
