@@ -106,6 +106,34 @@ connected to their own Outlook mailbox):
   for them: Authentication → Users → (the user) → User Metadata, add
   `"emails_enabled": true`. See `src/lib/auth/features.ts`.
 
+**Prefer letting an agent decide instead of hardcoding a REST call?** DailyFlow
+also exposes an MCP server at `POST/GET/DELETE /api/mcp`, built with
+[`mcp-handler`](https://www.npmjs.com/package/mcp-handler) on MCP SDK v2 (the
+2026-07-28 spec, Streamable HTTP transport). It's the same personal API token
+as above (`Authorization: Bearer <their token>`) and the same underlying
+reads/writes — just offered as MCP tools an agent can pick and fill in itself,
+rather than a fixed automation hardcoding which fields go where. Connect it in
+Langdock as a custom MCP server: URL `https://<your-deployment>/api/mcp`,
+Bearer auth with the token from Settings → "API-Token für Langdock". It
+exposes four tools:
+
+- `create_task` — `title` (required), `description`, `category`, `due_date`
+  (`YYYY-MM-DD`). Same semantics as `/api/ingest/task`.
+- `create_recurring_task` — `title` (required), `category`,
+  `estimated_minutes` (default 15), `weekdays` (1=Monday..7=Sunday, omit/empty
+  = every day). Same semantics as `/api/ingest/recurring-task`.
+- `create_email_task` — `subject`, `sender` (required), `preview`,
+  `outlook_flag_id`. Same semantics as `/api/ingest/email-task`, for a full
+  Judith-style flagged-mail workflow.
+- `complete_email_task` — `outlook_flag_id` (required). Same semantics as
+  `/api/ingest/email-task/complete`.
+
+Both the REST routes and the MCP tools share the same token, the same
+`api_tokens` table and the same server-side writes — pick whichever protocol
+the automation on the other end speaks. `/api/ingest/*` stays for fixed,
+pre-wired automations (like Henrik's); `/api/mcp` is for an agent that should
+decide for itself when to call which tool.
+
 **Not yet covered by any of this:** replying via voice ("An Judith senden" in
 the app) still always calls Henrik's Langdock agent (`LANGDOCK_API_KEY` /
 `LANGDOCK_JUDITH_AGENT_ID` are a single global pair, not per-user). A second

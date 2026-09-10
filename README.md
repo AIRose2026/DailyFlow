@@ -76,7 +76,10 @@ neuen `/api/ingest/*`-Endpunkte mit einem persönlichen API-Token nutzen
 (Einstellungen → "API-Token für Langdock" in der App) — z. B. nur um
 Aufgaben/Routinen anlegen zu lassen (`/api/ingest/task`,
 `/api/ingest/recurring-task`), oder den vollen geflaggte-Mails-Workflow wie
-bei Henrik. Details in
+bei Henrik. Alternativ steht unter `/api/mcp` derselbe Funktionsumfang auch
+als MCP-Server bereit (gleicher Token, gleiche Rechte) — als eigener
+MCP-Server in Langdock verbindbar, statt fest verdrahteter REST-Aufrufe.
+Details in
 [`supabase/README.md`](./supabase/README.md#adding-a-langdock-automation-for-a-second-or-third--user).
 
 ### 3. Feedback-Button / ClickUp einrichten
