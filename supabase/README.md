@@ -41,7 +41,7 @@ Level Security:
 Never expose the service role key to the browser — it belongs only in
 Judith's own Langdock configuration, never in DailyFlow's client bundle.
 
-### Adding Judith for a second (or third, …) user
+### Adding a Langdock automation for a second (or third, …) user
 
 Henrik's original Judith routine writes directly to the database with the
 service role key, as described above — that keeps working completely
@@ -52,48 +52,62 @@ Langdock account, though: handing out the service role key to a third party's
 Langdock config would give that account (and anyone who ever compromises it)
 unrestricted read/write access to *every* user's data, not just their own.
 So for anyone beyond Henrik, use the **personal API token** flow instead —
-built for exactly this:
+built for exactly this. Every endpoint below is authenticated the same way:
 
-1. That person logs into DailyFlow, goes to Settings → **"API-Token für
-   Judith"**, and generates a token (shown once — they copy it immediately).
-2. Their own Judith-equivalent Langdock routine (under their own Langdock
-   account, connected to their own Outlook mailbox) calls DailyFlow's ingest
-   endpoints instead of touching Supabase directly:
+```
+Authorization: Bearer <their token>
+Content-Type: application/json
+```
 
-   - **New flagged mail →** `POST https://<your-deployment>/api/ingest/email-task`
-     ```
-     Authorization: Bearer <their token>
-     Content-Type: application/json
+That person generates their token once, in Settings → **"API-Token für
+Langdock"** (shown once — they copy it immediately; Settings → trash icon
+revokes it later). Each endpoint resolves the token to that person's
+`user_id` server-side (via `SUPABASE_SERVICE_ROLE_KEY`, which never leaves
+this deployment) and only ever reads/writes their own rows — the token can't
+touch anyone else's data even if it's ever misconfigured or leaked to the
+wrong place. Scope is per-user, not per-endpoint: one token authorizes all
+the routes below for that person.
 
-     { "subject": "...", "sender": "...", "preview": "...", "outlook_flag_id": "..." }
-     ```
-     `subject` and `sender` are required; the rest are optional. Response:
-     `{ "ok": true, "task_id": "..." }`.
-   - **Draft created / flag removed →** `POST .../api/ingest/email-task/complete`
-     ```
-     Authorization: Bearer <their token>
-     Content-Type: application/json
+**Just having a Langdock automation create to-dos or routines** (no
+Outlook/flagged-mail involved — this is the common case for anyone who isn't
+running a full Judith-style mail workflow):
 
-     { "outlook_flag_id": "..." }
-     ```
-     Marks the matching task done. Each endpoint resolves the token to that
-     person's `user_id` server-side (via `SUPABASE_SERVICE_ROLE_KEY`, which
-     never leaves this deployment) and only ever reads/writes their own rows
-     — the token can't touch anyone else's data even if it's ever
-     misconfigured or leaked to the wrong place.
+- `POST /api/ingest/task`
+  ```json
+  { "title": "...", "description": "...", "category": "...", "due_date": "2026-09-15" }
+  ```
+  Only `title` is required. → `{ "ok": true, "task_id": "..." }`
+- `POST /api/ingest/recurring-task`
+  ```json
+  { "title": "...", "category": "...", "estimated_minutes": 15, "weekdays": [1, 3, 5] }
+  ```
+  Only `title` is required (`estimated_minutes` defaults to 15,
+  `weekdays` defaults to every day — same 1=Monday..7=Sunday scheme as the
+  app's own weekday picker). → `{ "ok": true, "recurring_task_id": "..." }`
 
-3. The "E-Mails" tab itself is still hidden by default for every account
-   (otherwise a new user would see an always-empty inbox with nothing behind
-   it). Once their routine is wired up and sending real data, enable the tab
-   for them: Authentication → Users → (the user) → User Metadata, add
-   `"emails_enabled": true`. See `src/lib/auth/features.ts`.
+**A full Judith-style flagged-email workflow** (their own Langdock account
+connected to their own Outlook mailbox):
 
-A revoked/deleted token (Settings → trash icon next to it) immediately stops
-working — nothing more to clean up on the Langdock side beyond removing it
-from that routine's config.
+- **New flagged mail →** `POST /api/ingest/email-task`
+  ```json
+  { "subject": "...", "sender": "...", "preview": "...", "outlook_flag_id": "..." }
+  ```
+  `subject` and `sender` are required; the rest are optional. →
+  `{ "ok": true, "task_id": "..." }`
+- **Draft created / flag removed →** `POST /api/ingest/email-task/complete`
+  ```json
+  { "outlook_flag_id": "..." }
+  ```
+  Marks the matching task done.
 
-**Not yet covered by this:** replying via voice ("An Judith senden" in the
-app) still always calls Henrik's Langdock agent (`LANGDOCK_API_KEY` /
+  The "E-Mails" tab itself is still hidden by default for every account
+  (otherwise a new user would see an always-empty inbox with nothing behind
+  it). Once their routine is wired up and sending real data, enable the tab
+  for them: Authentication → Users → (the user) → User Metadata, add
+  `"emails_enabled": true`. See `src/lib/auth/features.ts`.
+
+**Not yet covered by any of this:** replying via voice ("An Judith senden" in
+the app) still always calls Henrik's Langdock agent (`LANGDOCK_API_KEY` /
 `LANGDOCK_JUDITH_AGENT_ID` are a single global pair, not per-user). A second
 person's own Judith can therefore *receive* flagged mail into DailyFlow, but
 the app's own reply-via-voice button won't reach *their* agent yet — that

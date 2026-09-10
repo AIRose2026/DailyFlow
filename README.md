@@ -73,8 +73,11 @@ Auf Judiths Seite (Langdock, nicht Teil dieses Repos):
 Das gilt für Henriks bestehende Routine unverändert. Für **weitere Nutzer**
 mit eigenem Langdock-Account: nicht den Service-Role-Key teilen, sondern die
 neuen `/api/ingest/*`-Endpunkte mit einem persönlichen API-Token nutzen
-(Einstellungen → "API-Token für Judith" in der App) — Details in
-[`supabase/README.md`](./supabase/README.md#adding-judith-for-a-second-or-third--user).
+(Einstellungen → "API-Token für Langdock" in der App) — z. B. nur um
+Aufgaben/Routinen anlegen zu lassen (`/api/ingest/task`,
+`/api/ingest/recurring-task`), oder den vollen geflaggte-Mails-Workflow wie
+bei Henrik. Details in
+[`supabase/README.md`](./supabase/README.md#adding-a-langdock-automation-for-a-second-or-third--user).
 
 ### 3. Feedback-Button / ClickUp einrichten
 

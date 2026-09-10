@@ -35,12 +35,13 @@ export function ApiTokenManager() {
     <div className="glass-card flex flex-col gap-3 p-4">
       <div className="flex items-center gap-2">
         <KeyRound size={16} className="text-accent-400" />
-        <p className="text-sm font-semibold text-white/80">API-Token für Judith</p>
+        <p className="text-sm font-semibold text-white/80">API-Token für Langdock</p>
       </div>
       <p className="text-sm text-white/50">
-        Für eine eigene Judith-Automatisierung (z. B. in deinem eigenen Langdock-Account)
-        — ohne dafür den Supabase-Master-Schlüssel zu teilen. Der Token gilt nur für
-        deinen eigenen Account.
+        Für eine eigene Automatisierung in deinem Langdock-Account — z. B. um Aufgaben
+        oder Routinen anlegen zu lassen, oder eine eigene Judith für geflaggte
+        E-Mails — ohne dafür den Supabase-Master-Schlüssel zu teilen. Der Token gilt
+        nur für deinen eigenen Account.
       </p>
 
       {freshToken && (
