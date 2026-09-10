@@ -12,22 +12,29 @@ import { formatMinutes, formatSignedMinutes } from "@/lib/utils/time";
 export function RoutineStatCard({
   stat,
   onClearStats,
+  onDeletePermanently,
 }: {
   stat: RoutineStat;
   onClearStats: () => Promise<void>;
+  onDeletePermanently: () => Promise<void>;
 }) {
   const { task, sessionCount, avgActualMinutes, plannedMinutes, diffMinutes } = stat;
   const hasData = sessionCount > 0;
   const over = diffMinutes > 0.5;
   const scale = Math.max(plannedMinutes, avgActualMinutes, 1);
+  // Deactivated on the Routinen page but still around here since this list
+  // deliberately keeps every routine, active or not, for history — give
+  // those a way to disappear for good instead of "clear stats" (which
+  // would just leave an empty, still-inactive entry sitting here).
+  const inactive = !task.active;
 
   const [confirming, setConfirming] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  async function handleClear() {
-    setClearing(true);
-    await onClearStats();
-    setClearing(false);
+  async function handleConfirm() {
+    setBusy(true);
+    await (inactive ? onDeletePermanently() : onClearStats());
+    setBusy(false);
     setConfirming(false);
   }
 
@@ -36,21 +43,20 @@ export function RoutineStatCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="truncate text-[15px] font-semibold text-white">{task.title}</p>
-          {task.category && (
-            <Badge tone="neutral" className="mt-1">
-              {task.category}
-            </Badge>
-          )}
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {task.category && <Badge tone="neutral">{task.category}</Badge>}
+            {inactive && <Badge tone="neutral">Inaktiv</Badge>}
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           {hasData && (
             <Badge tone={over ? "danger" : "accent"}>{formatSignedMinutes(diffMinutes)}</Badge>
           )}
-          {hasData && (
+          {(hasData || inactive) && (
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              aria-label="Zeiterfassung löschen"
+              aria-label={inactive ? "Routine endgültig entfernen" : "Zeiterfassung löschen"}
               className="flex h-7 w-7 items-center justify-center rounded-full text-white/25 transition-colors hover:text-danger-400"
             >
               <Trash2 size={14} />
@@ -86,8 +92,9 @@ export function RoutineStatCard({
       {confirming && (
         <div className="flex flex-col gap-2 rounded-2xl border border-danger-500/30 bg-danger-500/10 p-3">
           <p className="text-xs text-danger-300">
-            Zeiterfassung für &quot;{task.title}&quot; wirklich löschen? Alle {sessionCount}{" "}
-            erfassten Durchläufe werden endgültig entfernt.
+            {inactive
+              ? `"${task.title}" ist bereits deaktiviert und endgültig entfernen? Die Routine verschwindet damit auch hier aus der Statistik, inklusive aller erfassten Zeiten.`
+              : `Zeiterfassung für "${task.title}" wirklich löschen? Alle ${sessionCount} erfassten Durchläufe werden endgültig entfernt.`}
           </p>
           <div className="flex gap-2">
             <GlowButton
@@ -101,11 +108,11 @@ export function RoutineStatCard({
             <GlowButton
               type="button"
               variant="danger"
-              onClick={handleClear}
-              disabled={clearing}
+              onClick={handleConfirm}
+              disabled={busy}
               className="h-9 flex-1 px-3 text-sm"
             >
-              {clearing ? "Wird gelöscht…" : "Löschen"}
+              {busy ? "Wird gelöscht…" : "Löschen"}
             </GlowButton>
           </div>
         </div>

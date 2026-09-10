@@ -116,6 +116,27 @@ export function useRecurringTaskStats() {
     }
   }
 
+  /**
+   * Permanently removes a routine's record itself (not just its time
+   * entries) — for routines already deactivated on the Routinen page,
+   * which otherwise keep showing up here forever since this hook
+   * deliberately fetches every routine, active or not, to preserve
+   * history. The recurring_tasks row's ON DELETE CASCADE takes its
+   * completions and time entries with it.
+   */
+  async function deleteRoutinePermanently(recurringTaskId: string) {
+    setRecurringTasks((prev) => prev.filter((t) => t.id !== recurringTaskId));
+    setEntries((prev) => prev.filter((e) => e.recurring_task_id !== recurringTaskId));
+    const { error: deleteError } = await supabase
+      .from("recurring_tasks")
+      .delete()
+      .eq("id", recurringTaskId);
+    if (deleteError) {
+      setError(deleteError.message);
+      refresh();
+    }
+  }
+
   return {
     stats,
     totalSessions,
@@ -123,6 +144,7 @@ export function useRecurringTaskStats() {
     loading,
     error,
     clearRoutineStats,
+    deleteRoutinePermanently,
     refresh,
   };
 }

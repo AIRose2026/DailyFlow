@@ -9,8 +9,15 @@ import { useRecurringTaskStats } from "@/lib/hooks/useRecurringTaskStats";
 import { formatMinutes } from "@/lib/utils/time";
 
 export default function StatisticsPage() {
-  const { stats, totalSessions, totalActualMinutesAll, loading, error, clearRoutineStats } =
-    useRecurringTaskStats();
+  const {
+    stats,
+    totalSessions,
+    totalActualMinutesAll,
+    loading,
+    error,
+    clearRoutineStats,
+    deleteRoutinePermanently,
+  } = useRecurringTaskStats();
 
   return (
     <AppShell header={<PageHeader eyebrow="Auswertung" title="Statistik" />}>
@@ -46,6 +53,7 @@ export default function StatisticsPage() {
                 key={stat.task.id}
                 stat={stat}
                 onClearStats={() => clearRoutineStats(stat.task.id)}
+                onDeletePermanently={() => deleteRoutinePermanently(stat.task.id)}
               />
             ))}
           </div>
