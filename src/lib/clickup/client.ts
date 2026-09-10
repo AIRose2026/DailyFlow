@@ -13,6 +13,7 @@ export interface FeedbackEntry {
   sentAt: string | null;
   status: string;
   url: string;
+  fromEmail: string | null;
 }
 
 /**
@@ -84,12 +85,15 @@ function parseFeedbackDescription(description: string) {
 }
 
 /**
- * Lists this user's own feedback submissions back out of the configured
- * ClickUp list, matched by the "Von: <email>" line each one was created
- * with — there's no local DailyFlow table for feedback, ClickUp is the
- * only store, so reading it back means asking ClickUp.
+ * Lists every feedback submission back out of the configured ClickUp
+ * list — there's no local DailyFlow table for feedback, ClickUp is the
+ * only store, so reading it back means asking ClickUp. Feedback is
+ * shared across everyone using this DailyFlow deployment (it's product
+ * feedback about the app, not personal task data), so this intentionally
+ * isn't scoped to the caller — each entry carries its own `fromEmail` so
+ * the UI can show who sent what.
  */
-export async function fetchFeedbackForEmail(email: string): Promise<FeedbackEntry[]> {
+export async function fetchAllFeedback(): Promise<FeedbackEntry[]> {
   const token = process.env.CLICKUP_API_TOKEN;
   const listId = process.env.CLICKUP_LIST_ID;
 
@@ -111,10 +115,9 @@ export async function fetchFeedbackForEmail(email: string): Promise<FeedbackEntr
 
   const data = await response.json().catch(() => ({ tasks: [] }));
   const tasks: unknown[] = Array.isArray(data?.tasks) ? data.tasks : [];
-  const normalizedEmail = email.trim().toLowerCase();
 
   return tasks
-    .map((raw): (FeedbackEntry & { fromEmail: string | null }) | null => {
+    .map((raw): FeedbackEntry | null => {
       if (typeof raw !== "object" || raw === null) return null;
       const task = raw as Record<string, unknown>;
       const id = typeof task.id === "string" ? task.id : null;
@@ -139,10 +142,6 @@ export async function fetchFeedbackForEmail(email: string): Promise<FeedbackEntr
         fromEmail: parsed.fromEmail,
       };
     })
-    .filter(
-      (entry): entry is FeedbackEntry & { fromEmail: string | null } =>
-        entry !== null && entry.fromEmail?.toLowerCase() === normalizedEmail
-    )
-    .sort((a, b) => (b.sentAt ?? "").localeCompare(a.sentAt ?? ""))
-    .map(({ fromEmail: _fromEmail, ...entry }) => entry);
+    .filter((entry): entry is FeedbackEntry => entry !== null)
+    .sort((a, b) => (b.sentAt ?? "").localeCompare(a.sentAt ?? ""));
 }

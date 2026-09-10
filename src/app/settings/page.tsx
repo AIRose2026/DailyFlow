@@ -56,8 +56,8 @@ export default function SettingsPage() {
               <MessageSquareText size={18} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold text-white">Mein Feedback</p>
-              <p className="text-xs text-white/40">Eigene Einsendungen aus ClickUp ansehen</p>
+              <p className="text-[15px] font-semibold text-white">Feedback</p>
+              <p className="text-xs text-white/40">Alle Einsendungen aus ClickUp ansehen</p>
             </div>
             <ChevronRight size={18} className="shrink-0 text-white/25" />
           </GlassCard>

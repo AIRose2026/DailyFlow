@@ -93,10 +93,11 @@ Der Feedback-Button (oben rechts, auf jeder App-Seite sichtbar) legt jede
 Nachricht als neue Aufgabe in der konfigurierten ClickUp-Liste an, inklusive
 Absender-E-Mail und Seite, von der aus das Feedback kam.
 
-Unter Einstellungen → **"Mein Feedback"** sieht jeder Nutzer seine eigenen
-Einsendungen wieder — die Seite liest sie live aus derselben ClickUp-Liste
-zurück (gefiltert auf die eigene E-Mail-Adresse, es gibt dafür keine
-zusätzliche Tabelle in Supabase).
+Unter Einstellungen → **"Feedback"** sieht jeder angemeldete Nutzer alle
+Einsendungen aller Nutzer wieder (mit Absender) — die Seite liest sie live
+aus derselben ClickUp-Liste zurück, es gibt dafür keine zusätzliche Tabelle
+in Supabase. Bewusst ungefiltert: Feedback zur App ist geteiltes
+Produkt-Feedback, keine persönlichen Aufgaben-/Routinendaten.
 
 ### 4. Deployment (Vercel)
 

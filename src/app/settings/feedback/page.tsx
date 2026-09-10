@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, User } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -14,7 +14,7 @@ export default function FeedbackHistoryPage() {
   const { entries, loading, error } = useFeedbackSubmissions();
 
   return (
-    <AppShell header={<PageHeader eyebrow="Mehr" title="Mein Feedback" backHref="/settings" />}>
+    <AppShell header={<PageHeader eyebrow="Mehr" title="Feedback" backHref="/settings" />}>
       <div className="flex flex-col gap-4">
         {error && (
           <p className="rounded-2xl border border-danger-500/30 bg-danger-500/10 px-4 py-3 text-sm text-danger-400">
@@ -37,6 +37,10 @@ export default function FeedbackHistoryPage() {
                 <GlassCard className="flex flex-col gap-2 py-4">
                   <p className="text-[15px] text-white/90">{entry.message}</p>
                   <div className="flex flex-wrap items-center gap-1.5">
+                    <Badge tone="neutral">
+                      <User size={11} />
+                      {entry.fromEmail?.split("@")[0] ?? "unbekannt"}
+                    </Badge>
                     <Badge tone="neutral">{entry.status}</Badge>
                     {entry.page && <Badge tone="neutral">{entry.page}</Badge>}
                     {entry.sentAt && (
