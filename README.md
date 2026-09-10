@@ -124,3 +124,7 @@ supabase/
 - `src/lib/supabase/types.ts` ist von Hand gepflegt und sollte nach dem
   Verlinken des Supabase-Projekts durch generierte Typen ersetzt werden
   (`supabase gen types typescript`).
+
+## Backlog
+
+Geplante, aber noch nicht umgesetzte Ideen: siehe [`BACKLOG.md`](./BACKLOG.md).
