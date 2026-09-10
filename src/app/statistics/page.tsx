@@ -9,7 +9,7 @@ import { useRecurringTaskStats } from "@/lib/hooks/useRecurringTaskStats";
 import { formatMinutes } from "@/lib/utils/time";
 
 export default function StatisticsPage() {
-  const { stats, totalSessions, totalActualMinutesAll, loading, error } =
+  const { stats, totalSessions, totalActualMinutesAll, loading, error, clearRoutineStats } =
     useRecurringTaskStats();
 
   return (
@@ -42,7 +42,11 @@ export default function StatisticsPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {stats.map((stat) => (
-              <RoutineStatCard key={stat.task.id} stat={stat} />
+              <RoutineStatCard
+                key={stat.task.id}
+                stat={stat}
+                onClearStats={() => clearRoutineStats(stat.task.id)}
+              />
             ))}
           </div>
         )}

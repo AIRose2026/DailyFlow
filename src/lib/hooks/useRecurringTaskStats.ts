@@ -101,12 +101,28 @@ export function useRecurringTaskStats() {
     0
   );
 
+  /** Deletes every recorded time entry for one routine — resets its stats
+   * (session count, average, everything) back to "noch keine Zeiterfassung"
+   * without touching the routine itself. */
+  async function clearRoutineStats(recurringTaskId: string) {
+    setEntries((prev) => prev.filter((e) => e.recurring_task_id !== recurringTaskId));
+    const { error: deleteError } = await supabase
+      .from("recurring_task_time_entries")
+      .delete()
+      .eq("recurring_task_id", recurringTaskId);
+    if (deleteError) {
+      setError(deleteError.message);
+      refresh();
+    }
+  }
+
   return {
     stats,
     totalSessions,
     totalActualMinutesAll,
     loading,
     error,
+    clearRoutineStats,
     refresh,
   };
 }

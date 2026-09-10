@@ -1,10 +1,11 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
+import { animate, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import { Check, Trash2 } from "lucide-react";
 
 const ACTION_THRESHOLD = 96;
 const MAX_DRAG = 160;
+const SNAP_BACK = { type: "spring", stiffness: 500, damping: 32 } as const;
 
 export function SwipeableTaskCard({
   onComplete,
@@ -26,6 +27,10 @@ export function SwipeableTaskCard({
       onComplete();
     } else if (info.offset.x < -ACTION_THRESHOLD) {
       onDelete();
+    } else {
+      // Below the threshold: spring back to center instead of leaving the
+      // card wherever the finger let go (drag alone doesn't do this).
+      animate(x, 0, SNAP_BACK);
     }
   }
 
@@ -58,7 +63,8 @@ export function SwipeableTaskCard({
         drag="x"
         dragDirectionLock
         dragConstraints={{ left: -MAX_DRAG, right: MAX_DRAG }}
-        dragElastic={0.25}
+        dragElastic={0.2}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
         whileTap={{ cursor: "grabbing" }}
