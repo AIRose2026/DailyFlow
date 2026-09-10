@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, ChevronRight, LogOut } from "lucide-react";
+import { Archive, ChevronRight, LogOut, MessageSquareText } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
@@ -45,6 +45,19 @@ export default function SettingsPage() {
             <div className="min-w-0 flex-1">
               <p className="text-[15px] font-semibold text-white">Archiv</p>
               <p className="text-xs text-white/40">Erledigte Aufgaben ansehen und löschen</p>
+            </div>
+            <ChevronRight size={18} className="shrink-0 text-white/25" />
+          </GlassCard>
+        </Link>
+
+        <Link href="/settings/feedback">
+          <GlassCard className="flex items-center gap-3 py-3.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-400/10 text-accent-400">
+              <MessageSquareText size={18} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold text-white">Mein Feedback</p>
+              <p className="text-xs text-white/40">Eigene Einsendungen aus ClickUp ansehen</p>
             </div>
             <ChevronRight size={18} className="shrink-0 text-white/25" />
           </GlassCard>

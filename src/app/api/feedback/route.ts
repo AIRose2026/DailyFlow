@@ -1,6 +1,25 @@
 import { NextResponse } from "next/server";
-import { sendFeedbackToClickUp } from "@/lib/clickup/client";
+import { fetchFeedbackForEmail, sendFeedbackToClickUp } from "@/lib/clickup/client";
 import { createClient } from "@/lib/supabase/server";
+
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
+
+  try {
+    const feedback = await fetchFeedbackForEmail(user.email);
+    return NextResponse.json({ ok: true, feedback });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
