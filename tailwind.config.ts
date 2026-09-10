@@ -72,6 +72,10 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.6" },
         },
+        "pulse-ring": {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(45, 251, 224, 0)" },
+          "50%": { boxShadow: "0 0 12px 2px rgba(45, 251, 224, 0.45)" },
+        },
         "pop-in": {
           "0%": { transform: "scale(0.92)", opacity: "0" },
           "100%": { transform: "scale(1)", opacity: "1" },
@@ -83,6 +87,7 @@ const config: Config = {
       },
       animation: {
         "pulse-glow": "pulse-glow 2.4s ease-in-out infinite",
+        "pulse-ring": "pulse-ring 2.4s ease-in-out infinite",
         "pop-in": "pop-in 0.2s ease-out",
         shimmer: "shimmer 2.5s linear infinite",
       },

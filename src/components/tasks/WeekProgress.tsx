@@ -97,7 +97,11 @@ export function WeekProgress() {
               <div
                 className={cn(
                   "relative flex h-11 w-11 items-center justify-center rounded-full transition-all",
-                  today && "animate-pulse-glow",
+                  // Only the ring glows for "today" — animating opacity on the
+                  // whole circle used to fade the count inside it down to near-
+                  // illegibility mid-pulse, so this pulses box-shadow instead
+                  // and never touches the content's own opacity.
+                  today && "animate-pulse-ring",
                   selected && "ring-2 ring-accent-400 ring-offset-2 ring-offset-base-900"
                 )}
                 style={{
@@ -119,7 +123,7 @@ export function WeekProgress() {
                       className="text-accent-400 drop-shadow-[0_0_6px_rgba(45,251,224,0.7)]"
                     />
                   ) : (
-                    <span className="text-[11px] font-semibold text-white/70">
+                    <span className="text-xs font-semibold tabular-nums text-white/90">
                       {total > 0 ? `${done}/${total}` : "–"}
                     </span>
                   )}
