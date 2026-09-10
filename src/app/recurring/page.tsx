@@ -6,11 +6,13 @@ import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AddRecurringTaskFab } from "@/components/recurring/AddRecurringTaskSheet";
+import { EditRecurringTaskSheet } from "@/components/recurring/EditRecurringTaskSheet";
 import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
 import { Spinner } from "@/components/ui/Spinner";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
+import type { RecurringTask } from "@/lib/supabase/types";
 import { cn } from "@/lib/utils/cn";
 
 export default function RecurringPage() {
@@ -26,10 +28,12 @@ export default function RecurringPage() {
     startTimer,
     stopTimer,
     createRecurringTask,
+    updateRecurringTask,
     deactivateRecurringTask,
   } = useRecurringTasks();
 
   const [showAll, setShowAll] = useState(false);
+  const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
   const otherTasksCount = recurringTasks.length - todaysRecurringTasks.length;
 
   return (
@@ -82,6 +86,7 @@ export default function RecurringPage() {
                         onToggle={() => toggleToday(task.id)}
                         onStartTimer={() => startTimer(task.id)}
                         onStopTimer={() => stopTimer(task.id)}
+                        onEdit={() => setEditingTask(task)}
                         onDeactivate={() => deactivateRecurringTask(task.id)}
                       />
                     </motion.div>
@@ -120,6 +125,7 @@ export default function RecurringPage() {
                           onToggle={() => toggleToday(task.id)}
                           onStartTimer={() => startTimer(task.id)}
                           onStopTimer={() => stopTimer(task.id)}
+                          onEdit={() => setEditingTask(task)}
                           onDeactivate={() => deactivateRecurringTask(task.id)}
                         />
                       ))}
@@ -133,6 +139,12 @@ export default function RecurringPage() {
       </div>
 
       <AddRecurringTaskFab onCreate={createRecurringTask} />
+      <EditRecurringTaskSheet
+        task={editingTask}
+        onClose={() => setEditingTask(null)}
+        onSave={updateRecurringTask}
+        onDelete={deactivateRecurringTask}
+      />
     </AppShell>
   );
 }

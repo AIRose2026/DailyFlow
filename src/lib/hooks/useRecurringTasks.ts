@@ -261,6 +261,32 @@ export function useRecurringTasks() {
     }
   }
 
+  async function updateRecurringTask(
+    id: string,
+    input: {
+      title: string;
+      category?: string | null;
+      estimated_minutes: number;
+      weekdays?: number[];
+    }
+  ) {
+    const patch = {
+      title: input.title,
+      category: input.category ?? null,
+      estimated_minutes: input.estimated_minutes,
+      weekdays: input.weekdays ?? [],
+    };
+    setRecurringTasks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    const { error: updateError } = await supabase
+      .from("recurring_tasks")
+      .update(patch)
+      .eq("id", id);
+    if (updateError) {
+      setError(updateError.message);
+      refresh();
+    }
+  }
+
   async function deactivateRecurringTask(id: string) {
     setRecurringTasks((prev) => prev.filter((t) => t.id !== id));
     const { error: updateError } = await supabase
@@ -288,6 +314,7 @@ export function useRecurringTasks() {
     startTimer,
     stopTimer,
     createRecurringTask,
+    updateRecurringTask,
     deactivateRecurringTask,
     refresh,
   };

@@ -88,6 +88,15 @@ export function useTasks() {
     }
   }
 
+  async function deleteTask(id: string) {
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    const { error: deleteError } = await supabase.from("tasks").delete().eq("id", id);
+    if (deleteError) {
+      setError(deleteError.message);
+      refresh();
+    }
+  }
+
   async function createTask(input: NewTaskInput) {
     if (!user) return;
     const { error: insertError } = await supabase.from("tasks").insert({
@@ -115,6 +124,7 @@ export function useTasks() {
     loading,
     error,
     completeTask,
+    deleteTask,
     createTask,
     refresh,
   };

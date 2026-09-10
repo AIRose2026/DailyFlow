@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Clock, Play, Square, Trash2 } from "lucide-react";
+import { Check, Clock, Pencil, Play, Square, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -29,6 +29,7 @@ export function RecurringTaskCard({
   onToggle,
   onStartTimer,
   onStopTimer,
+  onEdit,
   onDeactivate,
 }: {
   task: RecurringTask;
@@ -37,6 +38,7 @@ export function RecurringTaskCard({
   onToggle: () => void;
   onStartTimer: () => void;
   onStopTimer: () => void;
+  onEdit: () => void;
   onDeactivate: () => void;
 }) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -76,23 +78,31 @@ export function RecurringTaskCard({
         <Check size={20} strokeWidth={3} />
       </button>
 
-      <div className="min-w-0 flex-1">
-        <p
-          className={cn(
-            "truncate text-[15px] font-semibold",
-            done ? "text-white/50 line-through decoration-accent-400/60" : "text-white"
-          )}
-        >
-          {task.title}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-          {task.category && <Badge tone="neutral">{task.category}</Badge>}
-          {schedule && <Badge tone="neutral">{schedule}</Badge>}
-          <Badge tone="accent" className="gap-1">
-            <Clock size={11} /> {formatMinutes(task.estimated_minutes)}
-          </Badge>
+      <button
+        type="button"
+        onClick={onEdit}
+        aria-label="Routine bearbeiten"
+        className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <p
+            className={cn(
+              "truncate text-[15px] font-semibold",
+              done ? "text-white/50 line-through decoration-accent-400/60" : "text-white"
+            )}
+          >
+            {task.title}
+          </p>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+            {task.category && <Badge tone="neutral">{task.category}</Badge>}
+            {schedule && <Badge tone="neutral">{schedule}</Badge>}
+            <Badge tone="accent" className="gap-1">
+              <Clock size={11} /> {formatMinutes(task.estimated_minutes)}
+            </Badge>
+          </div>
         </div>
-      </div>
+        <Pencil size={13} className="shrink-0 text-white/20" />
+      </button>
 
       <button
         type="button"

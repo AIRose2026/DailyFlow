@@ -8,10 +8,12 @@ import type { Task } from "@/lib/supabase/types";
 export function TaskList({
   tasks,
   onComplete,
+  onDelete,
   emptyLabel,
 }: {
   tasks: Task[];
   onComplete: (id: string) => void;
+  onDelete: (id: string) => void;
   emptyLabel: string;
 }) {
   if (tasks.length === 0) {
@@ -34,7 +36,10 @@ export function TaskList({
             exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.18 } }}
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
-            <SwipeableTaskCard onComplete={() => onComplete(task.id)}>
+            <SwipeableTaskCard
+              onComplete={() => onComplete(task.id)}
+              onDelete={() => onDelete(task.id)}
+            >
               <TaskCard task={task} />
             </SwipeableTaskCard>
           </motion.div>

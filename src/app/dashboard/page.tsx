@@ -13,7 +13,8 @@ import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
 export default function DashboardPage() {
-  const { today, overdue, categories, loading, error, completeTask, createTask } = useTasks();
+  const { today, overdue, categories, loading, error, completeTask, deleteTask, createTask } =
+    useTasks();
   const { totalPlannedMinutesToday, completedMinutesToday, error: recurringError } =
     useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export default function DashboardPage() {
                 <TaskList
                   tasks={filteredOverdue}
                   onComplete={completeTask}
+                  onDelete={deleteTask}
                   emptyLabel="Keine überfälligen Aufgaben."
                 />
               </section>
@@ -69,6 +71,7 @@ export default function DashboardPage() {
               <TaskList
                 tasks={filteredToday}
                 onComplete={completeTask}
+                onDelete={deleteTask}
                 emptyLabel="Für heute ist alles erledigt. 🎉"
               />
             </section>
