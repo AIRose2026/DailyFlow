@@ -35,6 +35,7 @@ export function useWeekOverview(weekOffset = 0) {
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
   const [weekTasks, setWeekTasks] = useState<Task[]>([]);
+  const [noDateTasks, setNoDateTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,7 +49,7 @@ export function useWeekOverview(weekOffset = 0) {
       const weekStart = format(days[0]!, "yyyy-MM-dd");
       const weekEnd = format(days[6]!, "yyyy-MM-dd");
 
-      const [recurringRes, completionsRes, tasksRes] = await Promise.all([
+      const [recurringRes, completionsRes, tasksRes, noDateTasksRes] = await Promise.all([
         supabase.from("recurring_tasks").select("*").eq("active", true),
         supabase
           .from("recurring_task_completions")
@@ -56,15 +57,22 @@ export function useWeekOverview(weekOffset = 0) {
           .gte("completed_date", weekStart)
           .lte("completed_date", weekEnd),
         supabase.from("tasks").select("*").gte("due_date", weekStart).lte("due_date", weekEnd),
+        // Tasks without a due date aren't tied to any date column, so they
+        // can't be filtered by range in SQL — fetch them all and attribute
+        // each to its creation day below (matching isDueToday's own rule:
+        // "today" only on the day it was made).
+        supabase.from("tasks").select("*").is("due_date", null),
       ]);
 
-      const firstError = recurringRes.error ?? completionsRes.error ?? tasksRes.error;
+      const firstError =
+        recurringRes.error ?? completionsRes.error ?? tasksRes.error ?? noDateTasksRes.error;
       if (firstError) {
         setError(firstError.message);
       } else {
         setRecurringTasks(recurringRes.data ?? []);
         setCompletions(completionsRes.data ?? []);
         setWeekTasks(tasksRes.data ?? []);
+        setNoDateTasks(noDateTasksRes.data ?? []);
         setError(null);
       }
     } catch (err) {
@@ -118,7 +126,10 @@ export function useWeekOverview(weekOffset = 0) {
 
   const days: DayOverview[] = currentWeekDays(referenceDate).map((date) => {
     const iso = format(date, "yyyy-MM-dd");
-    const dueThatDay = weekTasks.filter((t) => t.due_date === iso);
+    const dueThatDay = [
+      ...weekTasks.filter((t) => t.due_date === iso),
+      ...noDateTasks.filter((t) => format(new Date(t.created_at), "yyyy-MM-dd") === iso),
+    ];
     const doneThatDay = dueThatDay.filter((t) => t.status === "done").length;
     const recurringDoneThatDay = completions.filter((c) => c.completed_date === iso).length;
     // Only count a recurring task on days from its creation date onward (it
