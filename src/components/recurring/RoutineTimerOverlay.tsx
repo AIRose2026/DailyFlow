@@ -35,9 +35,16 @@ export function RoutineTimerOverlay({
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const [pausing, setPausing] = useState(false);
   const [finishing, setFinishing] = useState(false);
+  const busy = pausing || finishing;
 
+  // Freezes the moment Pause/Fertig is pressed instead of ticking on
+  // through however long the actual save takes — the booked duration is
+  // fixed at that same moment server-side (stopTimer captures `new Date()`
+  // before its own await), so a slow round-trip used to leave the display
+  // visibly a few seconds ahead of what actually got recorded by the time
+  // the overlay closed.
   useEffect(() => {
-    if (!open || !startedAt) return;
+    if (!open || !startedAt || busy) return;
     const startedMs = new Date(startedAt).getTime();
     function tick() {
       setSessionSeconds(Math.max(0, Math.round((Date.now() - startedMs) / 1000)));
@@ -45,7 +52,7 @@ export function RoutineTimerOverlay({
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [open, startedAt]);
+  }, [open, startedAt, busy]);
 
   async function handlePause() {
     setPausing(true);
@@ -58,8 +65,6 @@ export function RoutineTimerOverlay({
     await onFinish();
     setFinishing(false);
   }
-
-  const busy = pausing || finishing;
   const { value, unit } = splitTrackedDuration(baselineSeconds + sessionSeconds);
 
   return (
