@@ -5,10 +5,13 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { RoutineStatCard } from "@/components/statistics/RoutineStatCard";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasRoutinesEnabled } from "@/lib/auth/features";
 import { useRecurringTaskStats } from "@/lib/hooks/useRecurringTaskStats";
 import { formatMinutes } from "@/lib/utils/time";
 
 export default function StatisticsPage() {
+  const { user } = useAuth();
   const {
     stats,
     totalSessions,
@@ -18,6 +21,17 @@ export default function StatisticsPage() {
     clearRoutineStats,
     deleteRoutinePermanently,
   } = useRecurringTaskStats();
+
+  if (!hasRoutinesEnabled(user)) {
+    return (
+      <AppShell header={<PageHeader eyebrow="Auswertung" title="Statistik" backHref="/settings" />}>
+        <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+          Routinen sind für diesen Account deaktiviert (Einstellungen → &quot;Routinen&quot;) —
+          die Statistik bezieht sich ausschließlich darauf.
+        </p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell header={<PageHeader eyebrow="Auswertung" title="Statistik" />}>

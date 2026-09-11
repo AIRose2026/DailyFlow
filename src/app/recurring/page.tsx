@@ -8,13 +8,26 @@ import { EditRecurringTaskSheet } from "@/components/recurring/EditRecurringTask
 import { RoutineConfigCard } from "@/components/recurring/RoutineConfigCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { SwipeToDeleteCard } from "@/components/ui/SwipeToDeleteCard";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasRoutinesEnabled } from "@/lib/auth/features";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import type { RecurringTask } from "@/lib/supabase/types";
 
 export default function RecurringPage() {
+  const { user } = useAuth();
   const { recurringTasks, loading, updateRecurringTask, deactivateRecurringTask } =
     useRecurringTasks();
   const [editingTask, setEditingTask] = useState<RecurringTask | null>(null);
+
+  if (!hasRoutinesEnabled(user)) {
+    return (
+      <AppShell header={<PageHeader eyebrow="Verwaltung" title="Routinen" backHref="/settings" />}>
+        <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+          Routinen sind für diesen Account deaktiviert (Einstellungen → &quot;Routinen&quot;).
+        </p>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell header={<PageHeader eyebrow="Verwaltung" title="Routinen" />}>

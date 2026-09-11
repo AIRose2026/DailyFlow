@@ -9,6 +9,7 @@ import { ApiTokenManager } from "@/components/settings/ApiTokenManager";
 import { CategoryManager } from "@/components/settings/CategoryManager";
 import { CompleteGestureSelector } from "@/components/settings/CompleteGestureSelector";
 import { DisplayNameEditor } from "@/components/settings/DisplayNameEditor";
+import { RoutinesToggle } from "@/components/settings/RoutinesToggle";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -35,6 +36,8 @@ export default function SettingsPage() {
         </GlassCard>
 
         <DisplayNameEditor />
+
+        <RoutinesToggle />
 
         <CompleteGestureSelector />
 

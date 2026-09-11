@@ -7,7 +7,7 @@ import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { hasCategoriesEnabled } from "@/lib/auth/features";
+import { hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
 import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
 import { cn } from "@/lib/utils/cn";
@@ -38,8 +38,12 @@ export function AddItemFab({
 }) {
   const { user } = useAuth();
   const categoriesEnabled = hasCategoriesEnabled(user);
+  const routinesEnabled = hasRoutinesEnabled(user);
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<ItemType>("task");
+  // Routines could be disabled mid-session after "type" was already set to
+  // "routine" — fall back to "task" rather than trusting stale state.
+  const effectiveType: ItemType = routinesEnabled ? type : "task";
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
@@ -75,7 +79,7 @@ export function AddItemFab({
     if (!title.trim()) return;
     setSaving(true);
 
-    if (type === "task") {
+    if (effectiveType === "task") {
       await onCreateTask({
         title: title.trim(),
         category: category.trim() || null,
@@ -133,36 +137,40 @@ export function AddItemFab({
                   </button>
                 </div>
 
-                <div className="mb-4 flex gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
-                  {(["task", "routine"] as const).map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setType(t)}
-                      className={cn(
-                        "flex-1 rounded-xl py-2 text-sm font-semibold transition-all",
-                        type === t
-                          ? "bg-accent-400/15 text-accent-300 shadow-glow-sm"
-                          : "text-white/50"
-                      )}
-                    >
-                      {t === "task" ? "Aufgabe" : "Routine"}
-                    </button>
-                  ))}
-                </div>
+                {routinesEnabled && (
+                  <div className="mb-4 flex gap-1.5 rounded-2xl border border-white/10 bg-white/[0.03] p-1">
+                    {(["task", "routine"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setType(t)}
+                        className={cn(
+                          "flex-1 rounded-xl py-2 text-sm font-semibold transition-all",
+                          effectiveType === t
+                            ? "bg-accent-400/15 text-accent-300 shadow-glow-sm"
+                            : "text-white/50"
+                        )}
+                      >
+                        {t === "task" ? "Aufgabe" : "Routine"}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder={type === "task" ? "Was steht an?" : "z. B. Posteingang sichten"}
+                    placeholder={
+                      effectiveType === "task" ? "Was steht an?" : "z. B. Posteingang sichten"
+                    }
                     className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
                   {categoriesEnabled && (
                     <CategorySelect value={category} onChange={setCategory} />
                   )}
 
-                  {type === "task" ? (
+                  {effectiveType === "task" ? (
                     showDate ? (
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">

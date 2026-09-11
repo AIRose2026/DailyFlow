@@ -40,3 +40,16 @@ export function getCompleteGesture(user: User | null): CompleteGesture {
 export function hasCategoriesEnabled(user: User | null): boolean {
   return user?.user_metadata?.categories_enabled !== false;
 }
+
+/**
+ * Whether this user has the routines feature turned on at all — for
+ * someone who only ever uses one-off to-dos and finds the whole concept
+ * unnecessary. Per-user (Settings → Routinen), defaulting to on. Off hides
+ * the Routinen/Statistik nav items, the Routine option on the add sheet,
+ * the planned-time stat, and routines from the To-dos list, Wochenübersicht
+ * and Archiv — it doesn't delete any routines or their history, so
+ * switching back on brings everything back exactly as it was.
+ */
+export function hasRoutinesEnabled(user: User | null): boolean {
+  return user?.user_metadata?.routines_enabled !== false;
+}

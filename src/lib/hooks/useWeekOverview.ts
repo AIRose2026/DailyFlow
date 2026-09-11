@@ -3,6 +3,7 @@
 import { addWeeks, format } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasRoutinesEnabled } from "@/lib/auth/features";
 import { createClient } from "@/lib/supabase/client";
 import { useDayKey } from "@/lib/hooks/useDayKey";
 import type { RecurringTask, RecurringTaskCompletion, Task } from "@/lib/supabase/types";
@@ -32,6 +33,7 @@ export interface DayOverview {
  */
 export function useWeekOverview(weekOffset = 0) {
   const { user } = useAuth();
+  const routinesEnabled = hasRoutinesEnabled(user);
   const supabase = useMemo(() => createClient(), []);
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
@@ -139,14 +141,22 @@ export function useWeekOverview(weekOffset = 0) {
       ...noDateTasks.filter((t) => format(new Date(t.created_at), "yyyy-MM-dd") === iso),
     ];
     const doneThatDay = dueThatDay.filter((t) => t.status === "done").length;
-    const recurringDoneThatDay = completions.filter((c) => c.completed_date === iso).length;
+    // Routines don't contribute to the ratio at all when disabled — there's
+    // no way to see or act on them elsewhere in the app in that state, so
+    // counting them here would show numbers the user can't make sense of.
+    const recurringDoneThatDay = routinesEnabled
+      ? completions.filter((c) => c.completed_date === iso).length
+      : 0;
     // Only count a recurring task on days from its creation date onward (it
     // didn't exist yet on earlier days) and only on the weekdays it's
     // actually scheduled for (empty weekdays = every day).
-    const recurringThatDay = recurringTasks.filter(
-      (t) =>
-        format(new Date(t.created_at), "yyyy-MM-dd") <= iso && routineAppliesOn(t.weekdays, date)
-    );
+    const recurringThatDay = routinesEnabled
+      ? recurringTasks.filter(
+          (t) =>
+            format(new Date(t.created_at), "yyyy-MM-dd") <= iso &&
+            routineAppliesOn(t.weekdays, date)
+        )
+      : [];
 
     return {
       date,

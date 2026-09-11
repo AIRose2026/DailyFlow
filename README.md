@@ -26,7 +26,11 @@ iPhone/iPad.
    Routine an
 3. **Routinen** — reine Verwaltung (anlegen, Wochentage/Dauer bearbeiten,
    löschen); Abhaken und Zeittracking passiert auf der To-dos-Seite, nicht
-   hier
+   hier. Pro Nutzer komplett abschaltbar (Einstellungen → "Routinen" →
+   Schalter): deaktiviert verschwinden die Routinen/Statistik-Tabs aus der
+   Navigation, die Routine-Option im "+"-Menü, die "geplante Zeit"-Anzeige
+   und Routinen aus To-dos, Wochenübersicht und Archiv — ohne bestehende
+   Routinen oder ihre Historie zu löschen.
 4. **E-Mail-Aufgaben** — Anzeige der von Judith angelegten Aufgaben inkl.
    Kontext; Spracheingabe (oder Text) eines Antwort-Prompts, der über
    `/api/judith/prompt` an Judith (Langdock-API) geschickt wird

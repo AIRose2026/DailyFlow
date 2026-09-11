@@ -13,7 +13,7 @@ import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { SwipeToCompleteCard } from "@/components/ui/SwipeToCompleteCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { getCompleteGesture, hasCategoriesEnabled } from "@/lib/auth/features";
+import { getCompleteGesture, hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
@@ -38,33 +38,38 @@ export default function DashboardPage() {
 
   const completeGesture = getCompleteGesture(user);
   const categoriesEnabled = hasCategoriesEnabled(user);
+  const routinesEnabled = hasRoutinesEnabled(user);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
     user?.email?.split("@")[0] ||
     "";
 
+  const todaysRoutines = routinesEnabled ? openTodaysRecurringTasks : [];
+
   const categories = Array.from(
     new Set([
       ...taskCategories,
-      ...openTodaysRecurringTasks.map((t) => t.category).filter((c): c is string => Boolean(c)),
+      ...todaysRoutines.map((t) => t.category).filter((c): c is string => Boolean(c)),
     ])
   ).sort();
 
   const filteredToday = category ? today.filter((t) => t.category === category) : today;
   const filteredOverdue = category ? overdue.filter((t) => t.category === category) : overdue;
   const filteredRoutines = category
-    ? openTodaysRecurringTasks.filter((t) => t.category === category)
-    : openTodaysRecurringTasks;
+    ? todaysRoutines.filter((t) => t.category === category)
+    : todaysRoutines;
 
   return (
     <AppShell
       header={
         <PageHeader eyebrow={displayName ? `Hi ${displayName}` : "Hi"} title="To-dos">
-          <TimeStat
-            plannedMinutes={totalPlannedMinutesToday}
-            trackedMinutes={trackedMinutesToday}
-          />
+          {routinesEnabled && (
+            <TimeStat
+              plannedMinutes={totalPlannedMinutesToday}
+              trackedMinutes={trackedMinutesToday}
+            />
+          )}
         </PageHeader>
       }
     >

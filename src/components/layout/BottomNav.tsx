@@ -4,11 +4,15 @@ import { BarChart3, CalendarClock, LayoutGrid, Mail, Settings } from "lucide-rea
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { hasEmailIntegration } from "@/lib/auth/features";
+import { hasEmailIntegration, hasRoutinesEnabled } from "@/lib/auth/features";
 import { cn } from "@/lib/utils/cn";
 
-const BASE_NAV_ITEMS = [
-  { href: "/dashboard", label: "To-dos", icon: LayoutGrid },
+const TODOS_NAV_ITEM = { href: "/dashboard", label: "To-dos", icon: LayoutGrid } as const;
+
+// Statistik is entirely routine-comparison data (planned vs. tracked time),
+// so there's nothing to show there once routines are off either — same
+// reasoning as gating E-Mails, avoid an always-empty tab.
+const ROUTINES_NAV_ITEMS = [
   { href: "/recurring", label: "Routinen", icon: CalendarClock },
   { href: "/statistics", label: "Statistik", icon: BarChart3 },
 ] as const;
@@ -22,7 +26,8 @@ export function BottomNav() {
   const { user } = useAuth();
 
   const navItems = [
-    ...BASE_NAV_ITEMS,
+    TODOS_NAV_ITEM,
+    ...(hasRoutinesEnabled(user) ? ROUTINES_NAV_ITEMS : []),
     ...(hasEmailIntegration(user) ? [EMAILS_NAV_ITEM] : []),
     SETTINGS_NAV_ITEM,
   ];
