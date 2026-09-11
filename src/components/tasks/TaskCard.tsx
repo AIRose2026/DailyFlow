@@ -19,6 +19,7 @@ export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => 
         <button
           type="button"
           onClick={onComplete}
+          onPointerDown={(e) => e.stopPropagation()}
           aria-label="Als erledigt markieren"
           className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/15 text-transparent transition-all active:scale-90 active:border-accent-400 active:bg-accent-400/20 active:text-accent-400"
         >

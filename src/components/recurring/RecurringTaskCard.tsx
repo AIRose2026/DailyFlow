@@ -122,6 +122,7 @@ export function RecurringTaskCard({
         {completeGesture === "tap" && (
           <button
             onClick={onToggle}
+            onPointerDown={(e) => e.stopPropagation()}
             aria-label={done ? "Als offen markieren" : "Als erledigt markieren"}
             className={cn(
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
@@ -138,6 +139,7 @@ export function RecurringTaskCard({
           <button
             type="button"
             onClick={onEdit}
+            onPointerDown={(e) => e.stopPropagation()}
             aria-label="Routine bearbeiten"
             className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
           >
@@ -151,6 +153,7 @@ export function RecurringTaskCard({
         <button
           type="button"
           onClick={handleTimerButtonClick}
+          onPointerDown={(e) => e.stopPropagation()}
           aria-label={running ? "Timer anzeigen" : "Timer starten"}
           className={cn(
             "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all active:scale-90",
@@ -171,7 +174,14 @@ export function RecurringTaskCard({
       </GlassCard>
 
       <RoutineTimerOverlay
-        open={showTimer && running}
+        // Not gated on `running` too: right after tapping start, the
+        // confirmed activeEntry prop hasn't propagated back down from the
+        // parent yet, so requiring it here made the overlay's very first
+        // open unreliable — it could take an extra render or simply not
+        // show up depending on timing. showTimer alone is set the instant
+        // the button is tapped, and the overlay ticks from 0 until the
+        // real startedAt arrives a moment later.
+        open={showTimer}
         title={task.title}
         startedAt={activeEntry?.started_at ?? null}
         baselineSeconds={closedSecondsToday}
