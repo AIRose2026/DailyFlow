@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { useDayKey } from "@/lib/hooks/useDayKey";
 import type {
   RecurringTask,
   RecurringTaskCompletion,
@@ -21,6 +22,11 @@ interface NewRecurringTaskInput {
 export function useRecurringTasks() {
   const { user } = useAuth();
   const supabase = useMemo(() => createClient(), []);
+  // today/todaysRecurringTasks below are computed fresh every render, so
+  // the re-render this forces at day rollover is enough to fix those; also
+  // fed into refresh()'s deps below so the entry_date-scoped fetch itself
+  // re-runs for the new day instead of keeping yesterday's entries cached.
+  const dayKey = useDayKey();
   const [recurringTasks, setRecurringTasks] = useState<RecurringTask[]>([]);
   const [completions, setCompletions] = useState<RecurringTaskCompletion[]>([]);
   // Today's time entries, open and closed — not just the currently running
@@ -81,7 +87,11 @@ export function useRecurringTasks() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, user]);
+    // dayKey isn't read in the body — it's here so this identity changes at
+    // day rollover, re-triggering the effect below to refetch (the query
+    // itself is scoped to "today").
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [supabase, user, dayKey]);
 
   useEffect(() => {
     refresh();

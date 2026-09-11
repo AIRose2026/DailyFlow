@@ -4,6 +4,7 @@ import { addWeeks, format } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { useDayKey } from "@/lib/hooks/useDayKey";
 import type { RecurringTask, RecurringTaskCompletion, Task } from "@/lib/supabase/types";
 import { currentWeekDays, routineAppliesOn, weekRangeLabel } from "@/lib/utils/date";
 
@@ -39,7 +40,14 @@ export function useWeekOverview(weekOffset = 0) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const referenceDate = useMemo(() => addWeeks(new Date(), weekOffset), [weekOffset]);
+  // Re-derived when the calendar day rolls over (see useDayKey), not just
+  // when weekOffset changes — otherwise "today" here stays frozen at
+  // whatever it was on mount until something unrelated causes a re-render.
+  const dayKey = useDayKey();
+  // dayKey isn't read in the body — it's here so this identity changes at
+  // day rollover, re-deriving referenceDate (and, downstream, re-fetching).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const referenceDate = useMemo(() => addWeeks(new Date(), weekOffset), [weekOffset, dayKey]);
 
   const refresh = useCallback(async () => {
     if (!user) return;

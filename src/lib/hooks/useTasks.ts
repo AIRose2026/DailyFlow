@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
+import { useDayKey } from "@/lib/hooks/useDayKey";
 import type { Task } from "@/lib/supabase/types";
 import { isDueToday, isOverdue } from "@/lib/utils/date";
 
@@ -16,6 +17,11 @@ interface NewTaskInput {
 export function useTasks() {
   const { user } = useAuth();
   const supabase = useMemo(() => createClient(), []);
+  // Not read directly — just forces a re-render when the calendar day rolls
+  // over, so today/overdue below (computed fresh every render) don't stay
+  // stuck on yesterday until some unrelated state change happens to
+  // trigger one.
+  useDayKey();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
