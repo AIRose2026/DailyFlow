@@ -1,13 +1,15 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { AddTaskFab } from "@/components/tasks/AddTaskSheet";
+import { AddItemFab } from "@/components/tasks/AddItemFab";
 import { CategoryFilter } from "@/components/tasks/CategoryFilter";
 import { TaskList } from "@/components/tasks/TaskList";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
+import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
@@ -15,10 +17,21 @@ import { useTasks } from "@/lib/hooks/useTasks";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { today, overdue, categories, loading, error, completeTask, deleteTask, createTask } =
+  const { today, overdue, categories: taskCategories, loading, error, completeTask, deleteTask, createTask } =
     useTasks();
-  const { totalPlannedMinutesToday, trackedMinutesToday, error: recurringError } =
-    useRecurringTasks();
+  const {
+    openTodaysRecurringTasks,
+    totalPlannedMinutesToday,
+    trackedMinutesToday,
+    loading: recurringLoading,
+    error: recurringError,
+    activeTimerFor,
+    closedSecondsTodayFor,
+    toggleToday,
+    startTimer,
+    stopTimer,
+    createRecurringTask,
+  } = useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
 
   const displayName =
@@ -26,13 +39,23 @@ export default function DashboardPage() {
     user?.email?.split("@")[0] ||
     "";
 
+  const categories = Array.from(
+    new Set([
+      ...taskCategories,
+      ...openTodaysRecurringTasks.map((t) => t.category).filter((c): c is string => Boolean(c)),
+    ])
+  ).sort();
+
   const filteredToday = category ? today.filter((t) => t.category === category) : today;
   const filteredOverdue = category ? overdue.filter((t) => t.category === category) : overdue;
+  const filteredRoutines = category
+    ? openTodaysRecurringTasks.filter((t) => t.category === category)
+    : openTodaysRecurringTasks;
 
   return (
     <AppShell
       header={
-        <PageHeader eyebrow={displayName ? `Hi ${displayName}` : "Hi"} title="Heute">
+        <PageHeader eyebrow={displayName ? `Hi ${displayName}` : "Hi"} title="To-dos">
           <TimeStat
             plannedMinutes={totalPlannedMinutesToday}
             trackedMinutes={trackedMinutesToday}
@@ -51,7 +74,7 @@ export default function DashboardPage() {
 
         <CategoryFilter categories={categories} selected={category} onSelect={setCategory} />
 
-        {loading ? (
+        {loading || recurringLoading ? (
           <div className="flex justify-center py-10">
             <Spinner />
           </div>
@@ -73,20 +96,55 @@ export default function DashboardPage() {
 
             <section>
               <h2 className="mb-2 text-sm font-semibold text-white/70">
-                Heute · {filteredToday.length}
+                Heute · {filteredRoutines.length + filteredToday.length}
               </h2>
-              <TaskList
-                tasks={filteredToday}
-                onComplete={completeTask}
-                onDelete={deleteTask}
-                emptyLabel="Für heute ist alles erledigt. 🎉"
-              />
+              {filteredRoutines.length === 0 && filteredToday.length === 0 ? (
+                <p className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/40">
+                  Für heute ist alles erledigt. 🎉
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {filteredRoutines.length > 0 && (
+                    <AnimatePresence initial={false}>
+                      {filteredRoutines.map((task) => (
+                        <motion.div
+                          key={task.id}
+                          layout
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.92 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                        >
+                          <RecurringTaskCard
+                            task={task}
+                            done={false}
+                            activeEntry={activeTimerFor(task.id)}
+                            closedSecondsToday={closedSecondsTodayFor(task.id)}
+                            onToggle={() => toggleToday(task.id)}
+                            onStartTimer={() => startTimer(task.id)}
+                            onStopTimer={() => stopTimer(task.id)}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  )}
+
+                  {filteredToday.length > 0 && (
+                    <TaskList
+                      tasks={filteredToday}
+                      onComplete={completeTask}
+                      onDelete={deleteTask}
+                      emptyLabel=""
+                    />
+                  )}
+                </div>
+              )}
             </section>
           </>
         )}
       </div>
 
-      <AddTaskFab onCreate={createTask} />
+      <AddItemFab onCreateTask={createTask} onCreateRecurringTask={createRecurringTask} />
     </AppShell>
   );
 }

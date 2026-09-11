@@ -79,3 +79,12 @@ export const WEEKDAY_OPTIONS: { value: number; label: string }[] = currentWeekDa
 export function routineAppliesOn(weekdays: number[], date: Date = new Date()): boolean {
   return weekdays.length === 0 || weekdays.includes(isoWeekday(date));
 }
+
+/** Short label for a routine's weekday set, e.g. "Mo, Mi, Fr" — null for
+ * "every day" (empty array), so callers can decide their own fallback text. */
+export function weekdaysLabel(weekdays: number[]): string | null {
+  if (weekdays.length === 0) return null;
+  return weekdays
+    .map((d) => WEEKDAY_OPTIONS.find((o) => o.value === d)?.label ?? "")
+    .join(", ");
+}

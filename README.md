@@ -19,9 +19,14 @@ iPhone/iPad.
 ## Features (MVP)
 
 1. **Login** (Supabase Auth, E-Mail/Passwort)
-2. **Dashboard** — Heute / Überfällig, Kategorie-Filter, Wochenübersicht der
-   Routinen, Hochrechnung der heute verplanten Zeit
-3. **Wiederkehrende Aufgaben** — Abhaken pro Tag, geplante Dauer je Aufgabe
+2. **To-dos** — Überfällig / Heute, kombiniert aus normalen Aufgaben und den
+   heute fälligen Routinen, Kategorie-Filter, Wochenübersicht,
+   Hochrechnung der heute verplanten vs. getrackten Zeit; ein
+   gemeinsamer "+"-Button legt wahlweise eine Aufgabe oder eine
+   Routine an
+3. **Routinen** — reine Verwaltung (anlegen, Wochentage/Dauer bearbeiten,
+   löschen); Abhaken und Zeittracking passiert auf der To-dos-Seite, nicht
+   hier
 4. **E-Mail-Aufgaben** — Anzeige der von Judith angelegten Aufgaben inkl.
    Kontext; Spracheingabe (oder Text) eines Antwort-Prompts, der über
    `/api/judith/prompt` an Judith (Langdock-API) geschickt wird
@@ -110,8 +115,8 @@ laufen automatisch über `next build`.
 ```
 src/
   app/                 # Next.js App Router Routen
-    dashboard/         # Heute/Überfällig-Ansicht
-    recurring/         # Wiederkehrende Aufgaben
+    dashboard/         # To-dos: Überfällig/Heute, Aufgaben + fällige Routinen
+    recurring/         # Routinen-Verwaltung (anlegen/bearbeiten/löschen)
     emails/            # E-Mail-Aufgaben + Judith-Prompt
     settings/          # Konto/Logout
     login/             # Auth

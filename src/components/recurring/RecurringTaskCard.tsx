@@ -5,16 +5,9 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { RecurringTask, RecurringTaskTimeEntry } from "@/lib/supabase/types";
-import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
+import { weekdaysLabel } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
 import { cn } from "@/lib/utils/cn";
-
-function weekdaysLabel(weekdays: number[]): string | null {
-  if (weekdays.length === 0) return null;
-  return weekdays
-    .map((d) => WEEKDAY_OPTIONS.find((o) => o.value === d)?.label ?? "")
-    .join(", ");
-}
 
 function formatElapsed(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -40,7 +33,10 @@ export function RecurringTaskCard({
   onToggle: () => void;
   onStartTimer: () => void;
   onStopTimer: () => void;
-  onEdit: () => void;
+  /** Omit on the To-dos view — editing/deleting a routine now lives
+   * exclusively on the Routinen tab, so this card is check-off + timer
+   * only there (no pencil, title isn't tappable). */
+  onEdit?: () => void;
 }) {
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const running = Boolean(activeEntry);
@@ -58,6 +54,29 @@ export function RecurringTaskCard({
 
   const schedule = weekdaysLabel(task.weekdays);
   const trackedToday = closedSecondsToday + (running ? sessionSeconds : 0);
+
+  const titleBlock = (
+    <div className="min-w-0 flex-1">
+      <p
+        className={cn(
+          "truncate text-[15px] font-semibold",
+          done ? "text-white/50 line-through decoration-accent-400/60" : "text-white"
+        )}
+      >
+        {task.title}
+      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        {task.category && <Badge tone="neutral">{task.category}</Badge>}
+        {schedule && <Badge tone="neutral">{schedule}</Badge>}
+        <Badge tone="accent" className="gap-1">
+          <Clock size={11} />
+          {closedSecondsToday > 0
+            ? `${formatMinutes(closedSecondsToday / 60)} getrackt`
+            : formatMinutes(task.estimated_minutes)}
+        </Badge>
+      </div>
+    </div>
+  );
 
   return (
     <GlassCard
@@ -80,34 +99,19 @@ export function RecurringTaskCard({
         <Check size={20} strokeWidth={3} />
       </button>
 
-      <button
-        type="button"
-        onClick={onEdit}
-        aria-label="Routine bearbeiten"
-        className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
-      >
-        <div className="min-w-0 flex-1">
-          <p
-            className={cn(
-              "truncate text-[15px] font-semibold",
-              done ? "text-white/50 line-through decoration-accent-400/60" : "text-white"
-            )}
-          >
-            {task.title}
-          </p>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {task.category && <Badge tone="neutral">{task.category}</Badge>}
-            {schedule && <Badge tone="neutral">{schedule}</Badge>}
-            <Badge tone="accent" className="gap-1">
-              <Clock size={11} />
-              {closedSecondsToday > 0
-                ? `${formatMinutes(closedSecondsToday / 60)} getrackt`
-                : formatMinutes(task.estimated_minutes)}
-            </Badge>
-          </div>
-        </div>
-        <Pencil size={13} className="shrink-0 text-white/20" />
-      </button>
+      {onEdit ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          aria-label="Routine bearbeiten"
+          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+        >
+          {titleBlock}
+          <Pencil size={13} className="shrink-0 text-white/20" />
+        </button>
+      ) : (
+        <div className="flex min-w-0 flex-1 items-center gap-1.5">{titleBlock}</div>
+      )}
 
       <button
         type="button"

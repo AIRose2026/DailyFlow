@@ -8,7 +8,7 @@ import { hasEmailIntegration } from "@/lib/auth/features";
 import { cn } from "@/lib/utils/cn";
 
 const BASE_NAV_ITEMS = [
-  { href: "/dashboard", label: "Heute", icon: LayoutGrid },
+  { href: "/dashboard", label: "To-dos", icon: LayoutGrid },
   { href: "/recurring", label: "Routinen", icon: CalendarClock },
   { href: "/statistics", label: "Statistik", icon: BarChart3 },
 ] as const;
