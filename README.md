@@ -23,14 +23,20 @@ iPhone/iPad.
    heute fälligen Routinen, Kategorie-Filter, Wochenübersicht,
    Hochrechnung der heute verplanten vs. getrackten Zeit; ein
    gemeinsamer "+"-Button legt wahlweise eine Aufgabe oder eine
-   Routine an
+   Routine an. Der Start-Button einer Routine öffnet ein vollflächiges
+   Overlay mit großem Live-Zähler und großen "Pause"/"Fertig"-Buttons —
+   Pause bucht die laufende Sitzung, ohne die Routine abzuhaken; Fertig
+   bucht sie und hakt in einem Schritt ab
 3. **Routinen** — reine Verwaltung (anlegen, Wochentage/Dauer bearbeiten,
    löschen); Abhaken und Zeittracking passiert auf der To-dos-Seite, nicht
    hier. Pro Nutzer komplett abschaltbar (Einstellungen → "Routinen" →
    Schalter): deaktiviert verschwinden die Routinen/Statistik-Tabs aus der
    Navigation, die Routine-Option im "+"-Menü, die "geplante Zeit"-Anzeige
    und Routinen aus To-dos, Wochenübersicht und Archiv — ohne bestehende
-   Routinen oder ihre Historie zu löschen.
+   Routinen oder ihre Historie zu löschen. Im Archiv lässt sich die
+   getrackte Zeit eines erledigten Tages nachträglich korrigieren (Stift
+   neben "X Min getrackt") — für den Fall, dass der Timer mal
+   vergessen wurde zu stoppen.
 4. **E-Mail-Aufgaben** — Anzeige der von Judith angelegten Aufgaben inkl.
    Kontext; Spracheingabe (oder Text) eines Antwort-Prompts, der über
    `/api/judith/prompt` an Judith (Langdock-API) geschickt wird

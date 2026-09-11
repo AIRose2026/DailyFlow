@@ -120,5 +120,54 @@ export function useCompletedRoutines() {
     }
   }
 
-  return { entries, loading, error, uncomplete, refresh };
+  /**
+   * Overwrites a completed day's tracked time with one corrected total —
+   * for "forgot to stop the timer" days where the real number is way off.
+   * Replaces whatever raw start/stop sessions made up that day's total with
+   * a single synthetic entry covering the given minutes, rather than
+   * exposing each individual session for editing.
+   */
+  async function updateTrackedMinutes(recurringTaskId: string, date: string, minutes: number) {
+    if (!user) return;
+    const seconds = Math.max(0, Math.round(minutes * 60));
+
+    setEntries((prev) =>
+      prev.map((e) =>
+        e.recurringTaskId === recurringTaskId && e.completedDate === date
+          ? { ...e, trackedMinutes: seconds / 60 }
+          : e
+      )
+    );
+
+    const { error: deleteError } = await supabase
+      .from("recurring_task_time_entries")
+      .delete()
+      .eq("recurring_task_id", recurringTaskId)
+      .eq("entry_date", date);
+
+    if (deleteError) {
+      setError(deleteError.message);
+      refresh();
+      return;
+    }
+
+    if (seconds > 0) {
+      const startedAt = new Date(`${date}T00:00:00`);
+      const endedAt = new Date(startedAt.getTime() + seconds * 1000);
+      const { error: insertError } = await supabase.from("recurring_task_time_entries").insert({
+        recurring_task_id: recurringTaskId,
+        user_id: user.id,
+        entry_date: date,
+        started_at: startedAt.toISOString(),
+        ended_at: endedAt.toISOString(),
+        duration_seconds: seconds,
+      });
+      if (insertError) {
+        setError(insertError.message);
+        refresh();
+      }
+    }
+  }
+
+  return { entries, loading, error, uncomplete, updateTrackedMinutes, refresh };
 }

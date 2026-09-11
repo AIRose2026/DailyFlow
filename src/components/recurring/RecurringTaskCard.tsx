@@ -4,6 +4,7 @@ import { Check, Clock, Pencil, Play, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { RoutineTimerOverlay } from "@/components/recurring/RoutineTimerOverlay";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { type CompleteGesture, hasCategoriesEnabled } from "@/lib/auth/features";
 import type { RecurringTask, RecurringTaskTimeEntry } from "@/lib/supabase/types";
@@ -37,9 +38,9 @@ export function RecurringTaskCard({
    * the caller wraps this card in SwipeToCompleteCard instead, which calls
    * onToggle via the gesture. */
   completeGesture: CompleteGesture;
-  onToggle: () => void;
-  onStartTimer: () => void;
-  onStopTimer: () => void;
+  onToggle: () => Promise<void> | void;
+  onStartTimer: () => Promise<void> | void;
+  onStopTimer: () => Promise<void> | void;
   /** Omit on the To-dos view — editing/deleting a routine now lives
    * exclusively on the Routinen tab, so this card is check-off + timer
    * only there (no pencil, title isn't tappable). */
@@ -48,6 +49,7 @@ export function RecurringTaskCard({
   const { user } = useAuth();
   const categoriesEnabled = hasCategoriesEnabled(user);
   const [sessionSeconds, setSessionSeconds] = useState(0);
+  const [showTimer, setShowTimer] = useState(false);
   const running = Boolean(activeEntry);
 
   useEffect(() => {
@@ -63,6 +65,27 @@ export function RecurringTaskCard({
 
   const schedule = weekdaysLabel(task.weekdays);
   const trackedToday = closedSecondsToday + (running ? sessionSeconds : 0);
+
+  // Tapping the timer button always opens the full-screen view — to start
+  // (which also opens it) or to get back to it after minimizing while
+  // still running. Pausing/finishing itself only happens from there now,
+  // so there's one consistent place that does it instead of a quick inline
+  // stop and a separate big one disagreeing on what "stop" means.
+  function handleTimerButtonClick() {
+    if (!running) onStartTimer();
+    setShowTimer(true);
+  }
+
+  async function handlePause() {
+    await onStopTimer();
+    setShowTimer(false);
+  }
+
+  async function handleFinish() {
+    await onStopTimer();
+    await onToggle();
+    setShowTimer(false);
+  }
 
   const titleBlock = (
     <div className="min-w-0 flex-1">
@@ -88,62 +111,74 @@ export function RecurringTaskCard({
   );
 
   return (
-    <GlassCard
-      className={cn(
-        "flex items-center gap-3 py-3 transition-all",
-        done && "border-accent-400/25 bg-accent-400/[0.05]",
-        running && "border-accent-400/40 shadow-glow-sm"
-      )}
-    >
-      {completeGesture === "tap" && (
-        <button
-          onClick={onToggle}
-          aria-label={done ? "Als offen markieren" : "Als erledigt markieren"}
-          className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
-            done
-              ? "border-accent-400 bg-accent-400/20 text-accent-400 shadow-glow-sm"
-              : "border-white/15 text-transparent"
-          )}
-        >
-          <Check size={20} strokeWidth={3} />
-        </button>
-      )}
-
-      {onEdit ? (
-        <button
-          type="button"
-          onClick={onEdit}
-          aria-label="Routine bearbeiten"
-          className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
-        >
-          {titleBlock}
-          <Pencil size={13} className="shrink-0 text-white/20" />
-        </button>
-      ) : (
-        <div className="flex min-w-0 flex-1 items-center gap-1.5">{titleBlock}</div>
-      )}
-
-      <button
-        type="button"
-        onClick={running ? onStopTimer : onStartTimer}
-        aria-label={running ? "Timer stoppen" : "Timer starten"}
+    <>
+      <GlassCard
         className={cn(
-          "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all active:scale-90",
-          running
-            ? "bg-accent-400/20 text-accent-300 shadow-glow-sm"
-            : "bg-white/[0.06] text-white/60"
+          "flex items-center gap-3 py-3 transition-all",
+          done && "border-accent-400/25 bg-accent-400/[0.05]",
+          running && "border-accent-400/40 shadow-glow-sm"
         )}
       >
-        {running ? (
-          <>
-            <Square size={13} />
-            <span className="font-mono tabular-nums">{formatElapsed(trackedToday)}</span>
-          </>
-        ) : (
-          <Play size={15} />
+        {completeGesture === "tap" && (
+          <button
+            onClick={onToggle}
+            aria-label={done ? "Als offen markieren" : "Als erledigt markieren"}
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
+              done
+                ? "border-accent-400 bg-accent-400/20 text-accent-400 shadow-glow-sm"
+                : "border-white/15 text-transparent"
+            )}
+          >
+            <Check size={20} strokeWidth={3} />
+          </button>
         )}
-      </button>
-    </GlassCard>
+
+        {onEdit ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label="Routine bearbeiten"
+            className="flex min-w-0 flex-1 items-center gap-1.5 text-left"
+          >
+            {titleBlock}
+            <Pencil size={13} className="shrink-0 text-white/20" />
+          </button>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">{titleBlock}</div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleTimerButtonClick}
+          aria-label={running ? "Timer anzeigen" : "Timer starten"}
+          className={cn(
+            "flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-all active:scale-90",
+            running
+              ? "bg-accent-400/20 text-accent-300 shadow-glow-sm"
+              : "bg-white/[0.06] text-white/60"
+          )}
+        >
+          {running ? (
+            <>
+              <Square size={13} />
+              <span className="font-mono tabular-nums">{formatElapsed(trackedToday)}</span>
+            </>
+          ) : (
+            <Play size={15} />
+          )}
+        </button>
+      </GlassCard>
+
+      <RoutineTimerOverlay
+        open={showTimer && running}
+        title={task.title}
+        startedAt={activeEntry?.started_at ?? null}
+        baselineSeconds={closedSecondsToday}
+        onPause={handlePause}
+        onFinish={handleFinish}
+        onClose={() => setShowTimer(false)}
+      />
+    </>
   );
 }

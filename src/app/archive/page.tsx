@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { Trash2 } from "lucide-react";
+import { TrackedTimeBadge } from "@/components/archive/TrackedTimeBadge";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
@@ -13,7 +14,6 @@ import { hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
 import { useArchivedTasks } from "@/lib/hooks/useArchivedTasks";
 import { useCompletedRoutines } from "@/lib/hooks/useCompletedRoutines";
 import { toDate } from "@/lib/utils/date";
-import { formatMinutes } from "@/lib/utils/time";
 
 export default function ArchivePage() {
   const { user } = useAuth();
@@ -25,6 +25,7 @@ export default function ArchivePage() {
     loading: routinesLoading,
     error: routinesError,
     uncomplete,
+    updateTrackedMinutes,
   } = useCompletedRoutines();
 
   const error = tasksError ?? routinesError;
@@ -102,9 +103,16 @@ export default function ArchivePage() {
                           <Badge tone="neutral">{entry.category}</Badge>
                         )}
                         {entry.trackedMinutes > 0 && (
-                          <Badge tone="neutral">
-                            {formatMinutes(entry.trackedMinutes)} getrackt
-                          </Badge>
+                          <TrackedTimeBadge
+                            minutes={entry.trackedMinutes}
+                            onSave={(minutes) =>
+                              updateTrackedMinutes(
+                                entry.recurringTaskId,
+                                entry.completedDate,
+                                minutes
+                              )
+                            }
+                          />
                         )}
                         <Badge tone="accent">
                           Erledigt am{" "}
