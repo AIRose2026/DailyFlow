@@ -6,6 +6,8 @@ import { useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasCategoriesEnabled } from "@/lib/auth/features";
 import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
 import { cn } from "@/lib/utils/cn";
@@ -34,6 +36,8 @@ export function AddItemFab({
     weekdays?: number[];
   }) => Promise<void>;
 }) {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<ItemType>("task");
 
@@ -154,7 +158,9 @@ export function AddItemFab({
                     placeholder={type === "task" ? "Was steht an?" : "z. B. Posteingang sichten"}
                     className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
-                  <CategorySelect value={category} onChange={setCategory} />
+                  {categoriesEnabled && (
+                    <CategorySelect value={category} onChange={setCategory} />
+                  )}
 
                   {type === "task" ? (
                     showDate ? (

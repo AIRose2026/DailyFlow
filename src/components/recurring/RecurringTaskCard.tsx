@@ -4,7 +4,8 @@ import { Check, Clock, Pencil, Play, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
-import type { CompleteGesture } from "@/lib/auth/features";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { type CompleteGesture, hasCategoriesEnabled } from "@/lib/auth/features";
 import type { RecurringTask, RecurringTaskTimeEntry } from "@/lib/supabase/types";
 import { weekdaysLabel } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
@@ -44,6 +45,8 @@ export function RecurringTaskCard({
    * only there (no pencil, title isn't tappable). */
   onEdit?: () => void;
 }) {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const [sessionSeconds, setSessionSeconds] = useState(0);
   const running = Boolean(activeEntry);
 
@@ -72,7 +75,7 @@ export function RecurringTaskCard({
         {task.title}
       </p>
       <div className="mt-1 flex flex-wrap items-center gap-1.5">
-        {task.category && <Badge tone="neutral">{task.category}</Badge>}
+        {categoriesEnabled && task.category && <Badge tone="neutral">{task.category}</Badge>}
         {schedule && <Badge tone="neutral">{schedule}</Badge>}
         <Badge tone="accent" className="gap-1">
           <Clock size={11} />

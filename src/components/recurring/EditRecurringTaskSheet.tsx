@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { CategorySelect } from "@/components/tasks/CategorySelect";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasCategoriesEnabled } from "@/lib/auth/features";
 import type { RecurringTask } from "@/lib/supabase/types";
 import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
@@ -25,6 +27,8 @@ export function EditRecurringTaskSheet({
   ) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }) {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [minutes, setMinutes] = useState(15);
@@ -105,7 +109,9 @@ export function EditRecurringTaskSheet({
                   placeholder="z. B. Posteingang sichten"
                   className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                 />
-                <CategorySelect value={category} onChange={setCategory} />
+                {categoriesEnabled && (
+                  <CategorySelect value={category} onChange={setCategory} />
+                )}
 
                 <div className="flex flex-col gap-1.5">
                   <span className="text-sm text-white/60">Wiederholt sich</span>

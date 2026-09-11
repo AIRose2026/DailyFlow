@@ -27,3 +27,16 @@ export type CompleteGesture = "swipe" | "tap";
 export function getCompleteGesture(user: User | null): CompleteGesture {
   return user?.user_metadata?.complete_gesture === "tap" ? "tap" : "swipe";
 }
+
+/**
+ * Whether this user has the categories feature turned on — Feedback:
+ * "Kategorien brauche ich nicht. Weg damit. Keep it simple." Per-user
+ * (Settings → Kategorien), defaulting to on so existing behavior doesn't
+ * change for anyone until they explicitly switch it off. Turning it off
+ * only hides category pickers/filters/badges throughout the app — it
+ * doesn't delete the user's saved categories, so switching back on later
+ * brings everything back exactly as it was.
+ */
+export function hasCategoriesEnabled(user: User | null): boolean {
+  return user?.user_metadata?.categories_enabled !== false;
+}

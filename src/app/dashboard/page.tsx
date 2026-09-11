@@ -13,7 +13,7 @@ import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { SwipeToCompleteCard } from "@/components/ui/SwipeToCompleteCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
-import { getCompleteGesture } from "@/lib/auth/features";
+import { getCompleteGesture, hasCategoriesEnabled } from "@/lib/auth/features";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [category, setCategory] = useState<string | null>(null);
 
   const completeGesture = getCompleteGesture(user);
+  const categoriesEnabled = hasCategoriesEnabled(user);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
@@ -76,7 +77,9 @@ export default function DashboardPage() {
 
         <WeekProgress />
 
-        <CategoryFilter categories={categories} selected={category} onSelect={setCategory} />
+        {categoriesEnabled && (
+          <CategoryFilter categories={categories} selected={category} onSelect={setCategory} />
+        )}
 
         {loading || recurringLoading ? (
           <div className="flex justify-center py-10">

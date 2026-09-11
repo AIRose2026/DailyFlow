@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasCategoriesEnabled } from "@/lib/auth/features";
 import type { RoutineStat } from "@/lib/hooks/useRecurringTaskStats";
 import { cn } from "@/lib/utils/cn";
 import { formatMinutes, formatSignedMinutes } from "@/lib/utils/time";
@@ -18,6 +20,8 @@ export function RoutineStatCard({
   onClearStats: () => Promise<void>;
   onDeletePermanently: () => Promise<void>;
 }) {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const { task, sessionCount, avgActualMinutes, plannedMinutes, diffMinutes } = stat;
   const hasData = sessionCount > 0;
   const over = diffMinutes > 0.5;
@@ -44,7 +48,7 @@ export function RoutineStatCard({
         <div className="min-w-0">
           <p className="truncate text-[15px] font-semibold text-white">{task.title}</p>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {task.category && <Badge tone="neutral">{task.category}</Badge>}
+            {categoriesEnabled && task.category && <Badge tone="neutral">{task.category}</Badge>}
             {inactive && <Badge tone="neutral">Inaktiv</Badge>}
           </div>
         </div>

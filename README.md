@@ -30,7 +30,11 @@ iPhone/iPad.
 4. **E-Mail-Aufgaben** — Anzeige der von Judith angelegten Aufgaben inkl.
    Kontext; Spracheingabe (oder Text) eines Antwort-Prompts, der über
    `/api/judith/prompt` an Judith (Langdock-API) geschickt wird
-5. Mobile-first Design; Abhaken per Wischen oder Checkbox — pro Nutzer in
+5. **Kategorien** sind pro Nutzer optional (Einstellungen → "Kategorien" →
+   Schalter): deaktiviert verschwinden Kategorie-Auswahl, -Filter und
+   -Badges überall aus der App, ohne die gespeicherten Kategorien zu
+   löschen — sie kommen beim erneuten Aktivieren unverändert zurück.
+6. Mobile-first Design; Abhaken per Wischen oder Checkbox — pro Nutzer in
    den Einstellungen wählbar (Einstellungen → "Abhaken"), gilt einheitlich
    für Aufgaben und Routinen. Löschen bleibt in jedem Fall Wischen — das
    ist bewusst nicht konfigurierbar.

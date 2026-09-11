@@ -1,10 +1,16 @@
+"use client";
+
 import { Check, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasCategoriesEnabled } from "@/lib/auth/features";
 import type { Task } from "@/lib/supabase/types";
 import { formatDueDate, isOverdue } from "@/lib/utils/date";
 
 export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => void }) {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const overdue = isOverdue(task.due_date, task.created_at);
 
   return (
@@ -30,7 +36,7 @@ export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => 
           <p className="mt-0.5 line-clamp-2 text-sm text-white/50">{task.description}</p>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {task.category && <Badge tone="neutral">{task.category}</Badge>}
+          {categoriesEnabled && task.category && <Badge tone="neutral">{task.category}</Badge>}
           {task.due_date ? (
             <Badge tone={overdue ? "danger" : "accent"}>{formatDueDate(task.due_date)}</Badge>
           ) : (

@@ -8,12 +8,16 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Spinner } from "@/components/ui/Spinner";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { hasCategoriesEnabled } from "@/lib/auth/features";
 import { useArchivedTasks } from "@/lib/hooks/useArchivedTasks";
 import { useCompletedRoutines } from "@/lib/hooks/useCompletedRoutines";
 import { toDate } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
 
 export default function ArchivePage() {
+  const { user } = useAuth();
+  const categoriesEnabled = hasCategoriesEnabled(user);
   const { tasks, loading: tasksLoading, error: tasksError, deleteTask } = useArchivedTasks();
   const {
     entries: routineEntries,
@@ -52,7 +56,9 @@ export default function ArchivePage() {
                       {task.title}
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      {task.category && <Badge tone="neutral">{task.category}</Badge>}
+                      {categoriesEnabled && task.category && (
+                        <Badge tone="neutral">{task.category}</Badge>
+                      )}
                       <Badge tone="accent">
                         Erledigt am {format(new Date(task.updated_at), "d. MMM", { locale: de })}
                       </Badge>
@@ -90,7 +96,9 @@ export default function ArchivePage() {
                       {entry.title}
                     </p>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      {entry.category && <Badge tone="neutral">{entry.category}</Badge>}
+                      {categoriesEnabled && entry.category && (
+                        <Badge tone="neutral">{entry.category}</Badge>
+                      )}
                       {entry.trackedMinutes > 0 && (
                         <Badge tone="neutral">{formatMinutes(entry.trackedMinutes)} getrackt</Badge>
                       )}
