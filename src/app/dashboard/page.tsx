@@ -11,7 +11,9 @@ import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
 import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
 import { Spinner } from "@/components/ui/Spinner";
+import { SwipeToCompleteCard } from "@/components/ui/SwipeToCompleteCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
+import { getCompleteGesture } from "@/lib/auth/features";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 
@@ -33,6 +35,8 @@ export default function DashboardPage() {
     createRecurringTask,
   } = useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
+
+  const completeGesture = getCompleteGesture(user);
 
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
@@ -87,6 +91,7 @@ export default function DashboardPage() {
                 </h2>
                 <TaskList
                   tasks={filteredOverdue}
+                  completeGesture={completeGesture}
                   onComplete={completeTask}
                   onDelete={deleteTask}
                   emptyLabel="Keine überfälligen Aufgaben."
@@ -106,32 +111,45 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-3">
                   {filteredRoutines.length > 0 && (
                     <AnimatePresence initial={false}>
-                      {filteredRoutines.map((task) => (
-                        <motion.div
-                          key={task.id}
-                          layout
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.92 }}
-                          transition={{ duration: 0.2, ease: "easeOut" }}
-                        >
+                      {filteredRoutines.map((task) => {
+                        const card = (
                           <RecurringTaskCard
                             task={task}
                             done={false}
                             activeEntry={activeTimerFor(task.id)}
                             closedSecondsToday={closedSecondsTodayFor(task.id)}
+                            completeGesture={completeGesture}
                             onToggle={() => toggleToday(task.id)}
                             onStartTimer={() => startTimer(task.id)}
                             onStopTimer={() => stopTimer(task.id)}
                           />
-                        </motion.div>
-                      ))}
+                        );
+                        return (
+                          <motion.div
+                            key={task.id}
+                            layout
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.92 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                          >
+                            {completeGesture === "swipe" ? (
+                              <SwipeToCompleteCard onComplete={() => toggleToday(task.id)}>
+                                {card}
+                              </SwipeToCompleteCard>
+                            ) : (
+                              card
+                            )}
+                          </motion.div>
+                        );
+                      })}
                     </AnimatePresence>
                   )}
 
                   {filteredToday.length > 0 && (
                     <TaskList
                       tasks={filteredToday}
+                      completeGesture={completeGesture}
                       onComplete={completeTask}
                       onDelete={deleteTask}
                       emptyLabel=""

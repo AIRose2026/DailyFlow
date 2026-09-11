@@ -4,6 +4,7 @@ import { Check, Clock, Pencil, Play, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
+import type { CompleteGesture } from "@/lib/auth/features";
 import type { RecurringTask, RecurringTaskTimeEntry } from "@/lib/supabase/types";
 import { weekdaysLabel } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
@@ -20,6 +21,7 @@ export function RecurringTaskCard({
   done,
   activeEntry,
   closedSecondsToday,
+  completeGesture,
   onToggle,
   onStartTimer,
   onStopTimer,
@@ -30,6 +32,10 @@ export function RecurringTaskCard({
   activeEntry?: RecurringTaskTimeEntry;
   /** Seconds already tracked today across earlier, already-stopped sessions. */
   closedSecondsToday: number;
+  /** "tap": renders its own checkmark button. "swipe": no checkmark here —
+   * the caller wraps this card in SwipeToCompleteCard instead, which calls
+   * onToggle via the gesture. */
+  completeGesture: CompleteGesture;
   onToggle: () => void;
   onStartTimer: () => void;
   onStopTimer: () => void;
@@ -86,18 +92,20 @@ export function RecurringTaskCard({
         running && "border-accent-400/40 shadow-glow-sm"
       )}
     >
-      <button
-        onClick={onToggle}
-        aria-label={done ? "Als offen markieren" : "Als erledigt markieren"}
-        className={cn(
-          "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
-          done
-            ? "border-accent-400 bg-accent-400/20 text-accent-400 shadow-glow-sm"
-            : "border-white/15 text-transparent"
-        )}
-      >
-        <Check size={20} strokeWidth={3} />
-      </button>
+      {completeGesture === "tap" && (
+        <button
+          onClick={onToggle}
+          aria-label={done ? "Als offen markieren" : "Als erledigt markieren"}
+          className={cn(
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 transition-all active:scale-90",
+            done
+              ? "border-accent-400 bg-accent-400/20 text-accent-400 shadow-glow-sm"
+              : "border-white/15 text-transparent"
+          )}
+        >
+          <Check size={20} strokeWidth={3} />
+        </button>
+      )}
 
       {onEdit ? (
         <button

@@ -14,3 +14,16 @@ import type { User } from "@supabase/supabase-js";
 export function hasEmailIntegration(user: User | null): boolean {
   return user?.user_metadata?.emails_enabled === true;
 }
+
+export type CompleteGesture = "swipe" | "tap";
+
+/**
+ * How this user completes tasks/routines: the original swipe gesture
+ * (default), or an explicit tap-to-check button — Feedback: "Routinen und
+ * to dos gleichermaßen zum abhaken nicht wischen". Per-user, not global, so
+ * everyone picks what works for them. Deleting a task stays swipe-to-delete
+ * either way — that part is deliberately not configurable.
+ */
+export function getCompleteGesture(user: User | null): CompleteGesture {
+  return user?.user_metadata?.complete_gesture === "tap" ? "tap" : "swipe";
+}

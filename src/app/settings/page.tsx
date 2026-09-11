@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiTokenManager } from "@/components/settings/ApiTokenManager";
 import { CategoryManager } from "@/components/settings/CategoryManager";
+import { CompleteGestureSelector } from "@/components/settings/CompleteGestureSelector";
 import { DisplayNameEditor } from "@/components/settings/DisplayNameEditor";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowButton } from "@/components/ui/GlowButton";
@@ -34,6 +35,8 @@ export default function SettingsPage() {
         </GlassCard>
 
         <DisplayNameEditor />
+
+        <CompleteGestureSelector />
 
         <CategoryManager />
 

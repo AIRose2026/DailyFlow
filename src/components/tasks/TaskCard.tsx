@@ -1,14 +1,24 @@
-import { Mail } from "lucide-react";
+import { Check, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
 import type { Task } from "@/lib/supabase/types";
 import { formatDueDate, isOverdue } from "@/lib/utils/date";
 
-export function TaskCard({ task }: { task: Task }) {
+export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => void }) {
   const overdue = isOverdue(task.due_date, task.created_at);
 
   return (
     <GlassCard className="flex items-start gap-3 py-4">
+      {onComplete && (
+        <button
+          type="button"
+          onClick={onComplete}
+          aria-label="Als erledigt markieren"
+          className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-white/15 text-transparent transition-all active:scale-90 active:border-accent-400 active:bg-accent-400/20 active:text-accent-400"
+        >
+          <Check size={18} strokeWidth={3} />
+        </button>
+      )}
       {task.source === "email" && (
         <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-400/10 text-accent-400">
           <Mail size={16} />

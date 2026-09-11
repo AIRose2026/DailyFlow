@@ -30,7 +30,10 @@ iPhone/iPad.
 4. **E-Mail-Aufgaben** — Anzeige der von Judith angelegten Aufgaben inkl.
    Kontext; Spracheingabe (oder Text) eines Antwort-Prompts, der über
    `/api/judith/prompt` an Judith (Langdock-API) geschickt wird
-5. Mobile-first Design, Wischgesten zum Abhaken (Dashboard-Aufgaben)
+5. Mobile-first Design; Abhaken per Wischen oder Checkbox — pro Nutzer in
+   den Einstellungen wählbar (Einstellungen → "Abhaken"), gilt einheitlich
+   für Aufgaben und Routinen. Löschen bleibt in jedem Fall Wischen — das
+   ist bewusst nicht konfigurierbar.
 
 Apple-Erinnerungen-Integration ist bewusst **nicht** Teil des MVP (siehe
 Projekt-Briefing) und kann später ergänzt werden.
@@ -139,8 +142,9 @@ supabase/
 - Glow-Schatten (`shadow-glow*`) auf Buttons, aktiven Nav-Items und Karten.
 - Glassmorphism (`glass-card`) für Karten und Bottom-Sheets.
 - Bottom-Tab-Navigation statt Sidebar, große Touch-Ziele (min. 44px).
-- Wischgesten (`SwipeableTaskCard`, framer-motion) zum Abhaken von Aufgaben
-  im Dashboard, mit Glow-Reveal-Animation.
+- Wischgesten (`SwipeableTaskCard`/`SwipeToCompleteCard`/`SwipeToDeleteCard`,
+  framer-motion) mit Glow-Reveal-Animation — welche davon zum Einsatz
+  kommen, hängt vom per-Nutzer "Abhaken"-Setting ab (siehe Features).
 
 ## Bekannte Einschränkungen
 
