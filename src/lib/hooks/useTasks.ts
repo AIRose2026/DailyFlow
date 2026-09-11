@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { useDayKey } from "@/lib/hooks/useDayKey";
@@ -25,10 +25,15 @@ export function useTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Only the very first fetch should show the loading spinner — every later
+  // realtime-triggered refresh flipping loading back to true would swap the
+  // whole list out for a spinner mid-session on every change, unmounting
+  // (and losing any local UI state of) every card in it.
+  const hasLoadedOnce = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    if (!hasLoadedOnce.current) setLoading(true);
     try {
       const { data, error: fetchError } = await supabase
         .from("tasks")
@@ -46,6 +51,7 @@ export function useTasks() {
       setError(err instanceof Error ? err.message : "Aufgaben konnten nicht geladen werden.");
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   }, [supabase, user]);
 

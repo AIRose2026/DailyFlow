@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { useDayKey } from "@/lib/hooks/useDayKey";
@@ -35,10 +35,18 @@ export function useRecurringTasks() {
   const [timeEntries, setTimeEntries] = useState<RecurringTaskTimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Only the very first fetch should show the loading spinner. Every later
+  // refresh() call — triggered by a realtime event or a dayKey rollover —
+  // used to flip loading back to true too, which made the dashboard swap
+  // the whole routines list out for a spinner mid-session: e.g. starting a
+  // timer writes a row, the realtime event fires refresh(), the list (and
+  // whatever local UI state its cards held, like the timer overlay being
+  // open) got unmounted and rebuilt from scratch a moment later.
+  const hasLoadedOnce = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    if (!hasLoadedOnce.current) setLoading(true);
 
     try {
       const weekStart = format(currentWeekDays()[0]!, "yyyy-MM-dd");
@@ -86,6 +94,7 @@ export function useRecurringTasks() {
       );
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
     // dayKey isn't read in the body — it's here so this identity changes at
     // day rollover, re-triggering the effect below to refetch (the query

@@ -9,14 +9,8 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { type CompleteGesture, hasCategoriesEnabled } from "@/lib/auth/features";
 import type { RecurringTask, RecurringTaskTimeEntry } from "@/lib/supabase/types";
 import { weekdaysLabel } from "@/lib/utils/date";
-import { formatMinutes } from "@/lib/utils/time";
+import { formatMinutes, formatTrackedDuration } from "@/lib/utils/time";
 import { cn } from "@/lib/utils/cn";
-
-function formatElapsed(totalSeconds: number): string {
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
 
 export function RecurringTaskCard({
   task,
@@ -103,7 +97,7 @@ export function RecurringTaskCard({
         <Badge tone="accent" className="gap-1">
           <Clock size={11} />
           {closedSecondsToday > 0
-            ? `${formatMinutes(closedSecondsToday / 60)} getrackt`
+            ? `${formatTrackedDuration(closedSecondsToday)} getrackt`
             : formatMinutes(task.estimated_minutes)}
         </Badge>
       </div>
@@ -165,7 +159,7 @@ export function RecurringTaskCard({
           {running ? (
             <>
               <Square size={13} />
-              <span className="font-mono tabular-nums">{formatElapsed(trackedToday)}</span>
+              <span className="font-mono tabular-nums">{formatTrackedDuration(trackedToday)}</span>
             </>
           ) : (
             <Play size={15} />

@@ -2,7 +2,7 @@
 
 import { Check, Minus, Pencil, Plus, X } from "lucide-react";
 import { useState } from "react";
-import { formatMinutes } from "@/lib/utils/time";
+import { formatMinutes, formatTrackedDuration } from "@/lib/utils/time";
 
 /**
  * The "X Min getrackt" badge on a completed routine in the Archiv, made
@@ -31,7 +31,7 @@ export function TrackedTimeBadge({
         aria-label="Getrackte Zeit bearbeiten"
         className="flex items-center gap-1 rounded-full bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-white/70 ring-1 ring-white/10 transition-all active:scale-95"
       >
-        {formatMinutes(minutes)} getrackt
+        {formatTrackedDuration(Math.round(minutes * 60))} getrackt
         <Pencil size={10} className="text-white/40" />
       </button>
     );

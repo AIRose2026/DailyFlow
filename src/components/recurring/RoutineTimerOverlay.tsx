@@ -4,15 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Pause, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Portal } from "@/components/ui/Portal";
-
-function formatBigElapsed(totalSeconds: number): string {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  const mm = String(minutes).padStart(2, "0");
-  const ss = String(seconds).padStart(2, "0");
-  return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
-}
+import { splitTrackedDuration } from "@/lib/utils/time";
 
 /**
  * The full-screen "running" view a routine's timer opens into — a big live
@@ -68,6 +60,7 @@ export function RoutineTimerOverlay({
   }
 
   const busy = pausing || finishing;
+  const { value, unit } = splitTrackedDuration(baselineSeconds + sessionSeconds);
 
   return (
     <Portal>
@@ -95,8 +88,9 @@ export function RoutineTimerOverlay({
               <p className="max-w-xs truncate text-xl font-semibold text-white">{title}</p>
             </div>
 
-            <p className="font-mono text-7xl font-bold tabular-nums text-white drop-shadow-[0_0_24px_rgba(45,251,224,0.35)]">
-              {formatBigElapsed(baselineSeconds + sessionSeconds)}
+            <p className="flex items-baseline gap-2 font-mono text-white drop-shadow-[0_0_24px_rgba(45,251,224,0.35)]">
+              <span className="text-7xl font-bold tabular-nums">{value}</span>
+              <span className="text-2xl font-semibold text-white/60">{unit}</span>
             </p>
 
             <div className="flex w-full max-w-sm flex-col gap-3">
