@@ -36,13 +36,17 @@ export function RoutineTimerOverlay({
   const [pausing, setPausing] = useState(false);
   const [finishing, setFinishing] = useState(false);
   const busy = pausing || finishing;
+  // Snapshot of baselineSeconds + sessionSeconds taken the instant
+  // Pause/Fertig is clicked, held until that action resolves. Just freezing
+  // sessionSeconds's own ticking wasn't enough: stopTimer's optimistic
+  // update folds this session's seconds into baselineSeconds (from the
+  // parent) almost immediately, before the network round-trip even
+  // finishes — so baselineSeconds jumps up while sessionSeconds was still
+  // sitting at its own pre-freeze value, and the sum briefly double-counted
+  // the same seconds from both sides. A single frozen total sidesteps that
+  // regardless of how baselineSeconds/sessionSeconds move underneath it.
+  const [frozenTotal, setFrozenTotal] = useState<number | null>(null);
 
-  // Freezes the moment Pause/Fertig is pressed instead of ticking on
-  // through however long the actual save takes — the booked duration is
-  // fixed at that same moment server-side (stopTimer captures `new Date()`
-  // before its own await), so a slow round-trip used to leave the display
-  // visibly a few seconds ahead of what actually got recorded by the time
-  // the overlay closed.
   useEffect(() => {
     if (!open || !startedAt || busy) return;
     const startedMs = new Date(startedAt).getTime();
@@ -55,17 +59,22 @@ export function RoutineTimerOverlay({
   }, [open, startedAt, busy]);
 
   async function handlePause() {
+    setFrozenTotal(baselineSeconds + sessionSeconds);
     setPausing(true);
     await onPause();
     setPausing(false);
+    setFrozenTotal(null);
   }
 
   async function handleFinish() {
+    setFrozenTotal(baselineSeconds + sessionSeconds);
     setFinishing(true);
     await onFinish();
     setFinishing(false);
+    setFrozenTotal(null);
   }
-  const { value, unit } = splitTrackedDuration(baselineSeconds + sessionSeconds);
+
+  const { value, unit } = splitTrackedDuration(frozenTotal ?? baselineSeconds + sessionSeconds);
 
   return (
     <Portal>
