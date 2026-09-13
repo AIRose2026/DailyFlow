@@ -8,6 +8,7 @@ import { GlowButton } from "@/components/ui/GlowButton";
 import { Portal } from "@/components/ui/Portal";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
+import { useConnections } from "@/lib/hooks/useConnections";
 import { WEEKDAY_OPTIONS } from "@/lib/utils/date";
 import { formatMinutes } from "@/lib/utils/time";
 import { cn } from "@/lib/utils/cn";
@@ -28,6 +29,7 @@ export function AddItemFab({
     title: string;
     category?: string | null;
     due_date?: string | null;
+    assignee_user_id?: string;
   }) => Promise<void>;
   onCreateRecurringTask: (input: {
     title: string;
@@ -39,6 +41,7 @@ export function AddItemFab({
   const { user } = useAuth();
   const categoriesEnabled = hasCategoriesEnabled(user);
   const routinesEnabled = hasRoutinesEnabled(user);
+  const { accepted: connections } = useConnections();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<ItemType>("task");
   // Routines could be disabled mid-session after "type" was already set to
@@ -47,6 +50,7 @@ export function AddItemFab({
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
+  const [assigneeId, setAssigneeId] = useState(""); // "" = for yourself
   const [saving, setSaving] = useState(false);
 
   // Task-only fields — see project note: reminders default to no date, only
@@ -68,6 +72,7 @@ export function AddItemFab({
     setType("task");
     setTitle("");
     setCategory("");
+    setAssigneeId("");
     setShowDate(false);
     setDueDate("");
     setMinutes(15);
@@ -84,6 +89,7 @@ export function AddItemFab({
         title: title.trim(),
         category: category.trim() || null,
         due_date: showDate && dueDate ? dueDate : null,
+        assignee_user_id: assigneeId || undefined,
       });
     } else {
       await onCreateRecurringTask({
@@ -166,6 +172,24 @@ export function AddItemFab({
                     }
                     className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
                   />
+                  {effectiveType === "task" && connections.length > 0 && (
+                    <select
+                      value={assigneeId}
+                      onChange={(e) => setAssigneeId(e.target.value)}
+                      aria-label="Für wen?"
+                      className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-base text-white outline-none focus:border-accent-400/60 focus:shadow-glow-sm"
+                    >
+                      <option value="" className="bg-base-900">
+                        Für mich
+                      </option>
+                      {connections.map((c) => (
+                        <option key={c.otherUserId} value={c.otherUserId} className="bg-base-900">
+                          Für {c.otherEmail}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
                   {categoriesEnabled && (
                     <CategorySelect value={category} onChange={setCategory} />
                   )}

@@ -66,12 +66,22 @@ export function useWeekOverview(weekOffset = 0) {
           .select("*")
           .gte("completed_date", weekStart)
           .lte("completed_date", weekEnd),
-        supabase.from("tasks").select("*").gte("due_date", weekStart).lte("due_date", weekEnd),
+        // .eq("user_id", ...) is explicit here even though RLS would also
+        // enforce it: since 0005_connections.sql, RLS also lets a task's
+        // creator see it on a connected person's list, which must never
+        // count toward *your own* Wochenübersicht — only tasks assigned to
+        // you should.
+        supabase
+          .from("tasks")
+          .select("*")
+          .eq("user_id", user.id)
+          .gte("due_date", weekStart)
+          .lte("due_date", weekEnd),
         // Tasks without a due date aren't tied to any date column, so they
         // can't be filtered by range in SQL — fetch them all and attribute
         // each to its creation day below (matching isDueToday's own rule:
         // "today" only on the day it was made).
-        supabase.from("tasks").select("*").is("due_date", null),
+        supabase.from("tasks").select("*").eq("user_id", user.id).is("due_date", null),
       ]);
 
       const firstError =

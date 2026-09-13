@@ -1,32 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import type { Task } from "@/lib/supabase/types";
 
-/** All completed ("done") tasks, newest-completed first, for the Archiv page. */
-export function useArchivedTasks() {
+/**
+ * Tasks *you* created for someone else via an accepted connection — not
+ * your own to-dos (those come from useTasks, scoped to user_id = you), just
+ * a lightweight way to see what you've delegated and whether it's done.
+ */
+export function useAssignedTasks() {
   const { user } = useAuth();
   const supabase = useMemo(() => createClient(), []);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedOnce = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
+    if (!hasLoadedOnce.current) setLoading(true);
     try {
       const { data, error: fetchError } = await supabase
         .from("tasks")
         .select("*")
-        // Explicit even though RLS would also enforce visibility: since
-        // 0005_connections.sql, RLS also lets a task's creator see it on a
-        // connected person's list, which must never leak into *your own*
-        // Archiv — this only ever shows tasks assigned to you.
-        .eq("user_id", user.id)
-        .eq("status", "done")
-        .order("updated_at", { ascending: false });
+        .eq("created_by", user.id)
+        .neq("user_id", user.id)
+        .order("status", { ascending: true })
+        .order("due_date", { ascending: true, nullsFirst: false });
 
       if (fetchError) {
         setError(fetchError.message);
@@ -35,9 +37,12 @@ export function useArchivedTasks() {
         setError(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Archiv konnte nicht geladen werden.");
+      setError(
+        err instanceof Error ? err.message : "Vergebene Aufgaben konnten nicht geladen werden."
+      );
     } finally {
       setLoading(false);
+      hasLoadedOnce.current = true;
     }
   }, [supabase, user]);
 
@@ -48,10 +53,10 @@ export function useArchivedTasks() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("archived-tasks-changes")
+      .channel("assigned-tasks-changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "tasks", filter: `user_id=eq.${user.id}` },
+        { event: "*", schema: "public", table: "tasks", filter: `created_by=eq.${user.id}` },
         () => refresh()
       )
       .subscribe();
@@ -61,7 +66,9 @@ export function useArchivedTasks() {
     };
   }, [supabase, user, refresh]);
 
-  async function deleteTask(id: string) {
+  /** Withdraws an assignment you made — deletes the task outright, same as
+   * the assignee deleting their own. */
+  async function retract(id: string) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     const { error: deleteError } = await supabase.from("tasks").delete().eq("id", id);
     if (deleteError) {
@@ -70,5 +77,5 @@ export function useArchivedTasks() {
     }
   }
 
-  return { tasks, loading, error, deleteTask, refresh };
+  return { tasks, loading, error, retract, refresh };
 }

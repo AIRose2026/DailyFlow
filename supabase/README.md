@@ -2,7 +2,8 @@
 
 1. Create a Supabase project (Postgres + Auth + Realtime).
 2. Apply every file in [`migrations/`](./migrations) in order (`0001_init.sql`,
-   `0002_categories.sql`, `0003_routine_scheduling_and_timers.sql`, …), e.g.:
+   `0002_categories.sql`, `0003_routine_scheduling_and_timers.sql`,
+   `0004_api_tokens.sql`, `0005_connections.sql`, …), e.g.:
 
    ```bash
    supabase link --project-ref <project-ref>
@@ -14,9 +15,33 @@
 3. Create the app user under **Authentication → Users**, e.g. via email/password
    (or send an invite). There's no self-service sign-up in the app on purpose —
    add every user here. Row Level Security is scoped per `user_id` on every
-   table, so additional users are fully isolated from each other automatically;
-   no schema changes needed to add more people.
+   table, so additional users are fully isolated from each other automatically
+   by default — no schema changes needed to add more people. The one
+   deliberate exception is **Connections** (below): two users who mutually opt
+   in can assign `tasks` to one another; nobody gets access without that
+   explicit, two-sided opt-in.
 4. Copy the project URL and anon key into `.env.local` (see `.env.example` in the repo root).
+
+## Connections (assigning tasks to another user)
+
+Settings → "Verbunden mit" lets a user invite another *existing* DailyFlow
+user by email. Nothing happens until the invited person accepts — there's no
+lookup that reveals anything about an account beyond "does one exist with
+this email" (via the `find_user_id_by_email` SQL function, callable only by
+authenticated users, added in `0005_connections.sql`), and a connection
+only ever unlocks assigning **tasks** (not routines, not categories, not
+anything else) between those two specific people:
+
+- `connections`: one row per accepted/pending pair (`requester_id`,
+  `recipient_id`, `status`). Either side can delete it at any time (declining
+  a pending request and disconnecting an accepted one are the same
+  operation).
+- `tasks.created_by` distinguishes "who created this" from `user_id` ("whose
+  list it's on"). Assigning a task to a connected person just inserts with
+  `user_id = their id`, `created_by = your id` — RLS only allows that insert
+  when an `accepted` connection exists between the two of you. Both people
+  can then see/edit/delete that one task; nothing else about the other
+  person's account becomes visible.
 
 ## Judith / Langdock integration
 

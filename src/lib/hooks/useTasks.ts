@@ -12,6 +12,11 @@ interface NewTaskInput {
   description?: string | null;
   category?: string | null;
   due_date?: string | null;
+  /** Create this task on someone else's list instead of your own — must be
+   * the id of a user you have an accepted connection with (RLS enforces
+   * this; see 0005_connections.sql). Omit to create it for yourself, as
+   * before. */
+  assignee_user_id?: string;
 }
 
 export function useTasks() {
@@ -38,6 +43,13 @@ export function useTasks() {
       const { data, error: fetchError } = await supabase
         .from("tasks")
         .select("*")
+        // Explicit even though RLS would also enforce visibility: RLS now
+        // also lets a task's creator see it on a connected person's list
+        // (see 0005_connections.sql), which must never leak into *your own*
+        // Heute/Überfällig/Demnächst — those are only ever tasks assigned
+        // to you. Tasks you've assigned to others live in useAssignedTasks
+        // instead.
+        .eq("user_id", user.id)
         .eq("status", "open")
         .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -141,8 +153,10 @@ export function useTasks() {
 
   async function createTask(input: NewTaskInput) {
     if (!user) return;
+    const targetUserId = input.assignee_user_id || user.id;
     const { error: insertError } = await supabase.from("tasks").insert({
-      user_id: user.id,
+      user_id: targetUserId,
+      created_by: user.id,
       title: input.title,
       description: input.description ?? null,
       category: input.category ?? null,
@@ -152,9 +166,13 @@ export function useTasks() {
     });
     if (insertError) {
       setError(insertError.message);
-    } else {
+    } else if (targetUserId === user.id) {
       refresh();
     }
+    // Assigned to someone else: it'll never show up in this hook's own
+    // list (the .eq("user_id", user.id) filter above excludes it), so
+    // there's nothing here to refresh — useAssignedTasks picks it up via
+    // its own realtime subscription instead.
   }
 
   return {
