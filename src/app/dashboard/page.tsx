@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AddItemFab } from "@/components/tasks/AddItemFab";
 import { CategoryFilter } from "@/components/tasks/CategoryFilter";
+import { EditTaskSheet } from "@/components/tasks/EditTaskSheet";
 import { TaskList } from "@/components/tasks/TaskList";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
@@ -16,11 +17,22 @@ import { useAuth } from "@/lib/auth/AuthProvider";
 import { getCompleteGesture, hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
+import type { Task } from "@/lib/supabase/types";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const { today, overdue, categories: taskCategories, loading, error, completeTask, deleteTask, createTask } =
-    useTasks();
+  const {
+    today,
+    overdue,
+    upcoming,
+    categories: taskCategories,
+    loading,
+    error,
+    completeTask,
+    deleteTask,
+    createTask,
+    updateTask,
+  } = useTasks();
   const {
     openTodaysRecurringTasks,
     totalPlannedMinutesToday,
@@ -35,6 +47,7 @@ export default function DashboardPage() {
     createRecurringTask,
   } = useRecurringTasks();
   const [category, setCategory] = useState<string | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const completeGesture = getCompleteGesture(user);
   const categoriesEnabled = hasCategoriesEnabled(user);
@@ -56,6 +69,7 @@ export default function DashboardPage() {
 
   const filteredToday = category ? today.filter((t) => t.category === category) : today;
   const filteredOverdue = category ? overdue.filter((t) => t.category === category) : overdue;
+  const filteredUpcoming = category ? upcoming.filter((t) => t.category === category) : upcoming;
   const filteredRoutines = category
     ? todaysRoutines.filter((t) => t.category === category)
     : todaysRoutines;
@@ -102,6 +116,7 @@ export default function DashboardPage() {
                   completeGesture={completeGesture}
                   onComplete={completeTask}
                   onDelete={deleteTask}
+                  onEdit={setEditingTask}
                   emptyLabel="Keine überfälligen Aufgaben."
                 />
               </section>
@@ -160,17 +175,41 @@ export default function DashboardPage() {
                       completeGesture={completeGesture}
                       onComplete={completeTask}
                       onDelete={deleteTask}
+                      onEdit={setEditingTask}
                       emptyLabel=""
                     />
                   )}
                 </div>
               )}
             </section>
+
+            {filteredUpcoming.length > 0 && (
+              <section>
+                <h2 className="mb-2 text-sm font-semibold text-white/70">
+                  Demnächst · {filteredUpcoming.length}
+                </h2>
+                <TaskList
+                  tasks={filteredUpcoming}
+                  completeGesture={completeGesture}
+                  onComplete={completeTask}
+                  onDelete={deleteTask}
+                  onEdit={setEditingTask}
+                  emptyLabel=""
+                />
+              </section>
+            )}
           </>
         )}
       </div>
 
       <AddItemFab onCreateTask={createTask} onCreateRecurringTask={createRecurringTask} />
+
+      <EditTaskSheet
+        task={editingTask}
+        onClose={() => setEditingTask(null)}
+        onSave={updateTask}
+        onDelete={deleteTask}
+      />
     </AppShell>
   );
 }

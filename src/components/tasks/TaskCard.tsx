@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Mail } from "lucide-react";
+import { Check, Mail, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
@@ -8,10 +8,37 @@ import { hasCategoriesEnabled } from "@/lib/auth/features";
 import type { Task } from "@/lib/supabase/types";
 import { formatDueDate, isOverdue } from "@/lib/utils/date";
 
-export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => void }) {
+export function TaskCard({
+  task,
+  onComplete,
+  onEdit,
+}: {
+  task: Task;
+  onComplete?: () => void;
+  /** Omit to render a plain, non-interactive title (e.g. inside a context
+   * where editing isn't offered). */
+  onEdit?: () => void;
+}) {
   const { user } = useAuth();
   const categoriesEnabled = hasCategoriesEnabled(user);
   const overdue = isOverdue(task.due_date, task.created_at);
+
+  const titleBlock = (
+    <div className="min-w-0 flex-1">
+      <p className="truncate text-[15px] font-semibold text-white">{task.title}</p>
+      {task.description && (
+        <p className="mt-0.5 line-clamp-2 text-sm text-white/50">{task.description}</p>
+      )}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {categoriesEnabled && task.category && <Badge tone="neutral">{task.category}</Badge>}
+        {task.due_date ? (
+          <Badge tone={overdue ? "danger" : "accent"}>{formatDueDate(task.due_date)}</Badge>
+        ) : (
+          overdue && <Badge tone="danger">Überfällig</Badge>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <GlassCard className="flex items-start gap-3 py-4">
@@ -31,20 +58,21 @@ export function TaskCard({ task, onComplete }: { task: Task; onComplete?: () => 
           <Mail size={16} />
         </div>
       )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-semibold text-white">{task.title}</p>
-        {task.description && (
-          <p className="mt-0.5 line-clamp-2 text-sm text-white/50">{task.description}</p>
-        )}
-        <div className="mt-2 flex flex-wrap items-center gap-1.5">
-          {categoriesEnabled && task.category && <Badge tone="neutral">{task.category}</Badge>}
-          {task.due_date ? (
-            <Badge tone={overdue ? "danger" : "accent"}>{formatDueDate(task.due_date)}</Badge>
-          ) : (
-            overdue && <Badge tone="danger">Überfällig</Badge>
-          )}
-        </div>
-      </div>
+
+      {onEdit ? (
+        <button
+          type="button"
+          onClick={onEdit}
+          onPointerDown={(e) => e.stopPropagation()}
+          aria-label="Aufgabe bearbeiten"
+          className="flex min-w-0 flex-1 items-start gap-1.5 text-left"
+        >
+          {titleBlock}
+          <Pencil size={13} className="mt-1 shrink-0 text-white/20" />
+        </button>
+      ) : (
+        titleBlock
+      )}
     </GlassCard>
   );
 }

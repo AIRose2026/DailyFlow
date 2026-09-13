@@ -100,6 +100,36 @@ export function useTasks() {
     }
   }
 
+  async function updateTask(id: string, input: NewTaskInput) {
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              title: input.title,
+              description: input.description ?? null,
+              category: input.category ?? null,
+              due_date: input.due_date ?? null,
+            }
+          : t
+      )
+    );
+    const { error: updateError } = await supabase
+      .from("tasks")
+      .update({
+        title: input.title,
+        description: input.description ?? null,
+        category: input.category ?? null,
+        due_date: input.due_date ?? null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (updateError) {
+      setError(updateError.message);
+      refresh();
+    }
+  }
+
   async function deleteTask(id: string) {
     setTasks((prev) => prev.filter((t) => t.id !== id));
     const { error: deleteError } = await supabase.from("tasks").delete().eq("id", id);
@@ -138,6 +168,7 @@ export function useTasks() {
     completeTask,
     deleteTask,
     createTask,
+    updateTask,
     refresh,
   };
 }

@@ -12,6 +12,7 @@ export function TaskList({
   completeGesture,
   onComplete,
   onDelete,
+  onEdit,
   emptyLabel,
 }: {
   tasks: Task[];
@@ -22,6 +23,7 @@ export function TaskList({
   completeGesture: CompleteGesture;
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
+  onEdit: (task: Task) => void;
   emptyLabel: string;
 }) {
   if (tasks.length === 0) {
@@ -49,11 +51,15 @@ export function TaskList({
                 onComplete={() => onComplete(task.id)}
                 onDelete={() => onDelete(task.id)}
               >
-                <TaskCard task={task} />
+                <TaskCard task={task} onEdit={() => onEdit(task)} />
               </SwipeableTaskCard>
             ) : (
               <SwipeToDeleteCard onDelete={() => onDelete(task.id)}>
-                <TaskCard task={task} onComplete={() => onComplete(task.id)} />
+                <TaskCard
+                  task={task}
+                  onComplete={() => onComplete(task.id)}
+                  onEdit={() => onEdit(task)}
+                />
               </SwipeToDeleteCard>
             )}
           </motion.div>
