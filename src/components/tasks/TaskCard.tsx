@@ -12,16 +12,12 @@ export function TaskCard({
   task,
   onComplete,
   onEdit,
-  assignedByLabel,
 }: {
   task: Task;
   onComplete?: () => void;
   /** Omit to render a plain, non-interactive title (e.g. inside a context
    * where editing isn't offered). */
   onEdit?: () => void;
-  /** Shown as a small badge when this task was assigned to you by someone
-   * else via a connection — that person's email. */
-  assignedByLabel?: string | null;
 }) {
   const { user } = useAuth();
   const categoriesEnabled = hasCategoriesEnabled(user);
@@ -40,7 +36,6 @@ export function TaskCard({
         ) : (
           overdue && <Badge tone="danger">Überfällig</Badge>
         )}
-        {assignedByLabel && <Badge tone="accent">Von {assignedByLabel}</Badge>}
       </div>
     </div>
   );

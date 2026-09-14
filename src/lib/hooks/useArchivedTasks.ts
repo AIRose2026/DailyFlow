@@ -20,11 +20,6 @@ export function useArchivedTasks() {
       const { data, error: fetchError } = await supabase
         .from("tasks")
         .select("*")
-        // Explicit even though RLS would also enforce visibility: since
-        // 0005_connections.sql, RLS also lets a task's creator see it on a
-        // connected person's list, which must never leak into *your own*
-        // Archiv — this only ever shows tasks assigned to you.
-        .eq("user_id", user.id)
         .eq("status", "done")
         .order("updated_at", { ascending: false });
 

@@ -13,7 +13,6 @@ export function TaskList({
   onComplete,
   onDelete,
   onEdit,
-  connectionEmailById,
   emptyLabel,
 }: {
   tasks: Task[];
@@ -25,9 +24,6 @@ export function TaskList({
   onComplete: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (task: Task) => void;
-  /** Maps a connected user's id to their email, to label a task assigned to
-   * you by them ("Von x@y.com"). Omit where that never applies. */
-  connectionEmailById?: Record<string, string>;
   emptyLabel: string;
 }) {
   if (tasks.length === 0) {
@@ -41,44 +37,33 @@ export function TaskList({
   return (
     <div className="flex flex-col gap-3">
       <AnimatePresence initial={false}>
-        {tasks.map((task) => {
-          const assignedByLabel =
-            task.created_by && task.created_by !== task.user_id
-              ? connectionEmailById?.[task.created_by] ?? null
-              : null;
-          return (
-            <motion.div
-              key={task.id}
-              layout
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.18 } }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
-            >
-              {completeGesture === "swipe" ? (
-                <SwipeableTaskCard
+        {tasks.map((task) => (
+          <motion.div
+            key={task.id}
+            layout
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.18 } }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+          >
+            {completeGesture === "swipe" ? (
+              <SwipeableTaskCard
+                onComplete={() => onComplete(task.id)}
+                onDelete={() => onDelete(task.id)}
+              >
+                <TaskCard task={task} onEdit={() => onEdit(task)} />
+              </SwipeableTaskCard>
+            ) : (
+              <SwipeToDeleteCard onDelete={() => onDelete(task.id)}>
+                <TaskCard
+                  task={task}
                   onComplete={() => onComplete(task.id)}
-                  onDelete={() => onDelete(task.id)}
-                >
-                  <TaskCard
-                    task={task}
-                    onEdit={() => onEdit(task)}
-                    assignedByLabel={assignedByLabel}
-                  />
-                </SwipeableTaskCard>
-              ) : (
-                <SwipeToDeleteCard onDelete={() => onDelete(task.id)}>
-                  <TaskCard
-                    task={task}
-                    onComplete={() => onComplete(task.id)}
-                    onEdit={() => onEdit(task)}
-                    assignedByLabel={assignedByLabel}
-                  />
-                </SwipeToDeleteCard>
-              )}
-            </motion.div>
-          );
-        })}
+                  onEdit={() => onEdit(task)}
+                />
+              </SwipeToDeleteCard>
+            )}
+          </motion.div>
+        ))}
       </AnimatePresence>
     </div>
   );

@@ -29,7 +29,6 @@ export async function POST(request: Request) {
     .from("tasks")
     .insert({
       user_id: userId,
-      created_by: userId,
       title: body.subject,
       category: typeof body.category === "string" ? body.category : null,
       due_date: typeof body.due_date === "string" ? body.due_date : null,

@@ -46,7 +46,6 @@ const handler = createMcpHandler(
           .from("tasks")
           .insert({
             user_id: userId,
-            created_by: userId,
             title,
             description: description ?? null,
             category: category ?? null,
@@ -148,7 +147,6 @@ const handler = createMcpHandler(
           .from("tasks")
           .insert({
             user_id: userId,
-            created_by: userId,
             title: subject,
             status: "open",
             source: "email",

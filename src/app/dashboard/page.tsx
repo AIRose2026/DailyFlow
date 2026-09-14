@@ -1,8 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { AddItemFab } from "@/components/tasks/AddItemFab";
@@ -12,18 +11,13 @@ import { TaskList } from "@/components/tasks/TaskList";
 import { TimeStat } from "@/components/tasks/TimeStat";
 import { WeekProgress } from "@/components/tasks/WeekProgress";
 import { RecurringTaskCard } from "@/components/recurring/RecurringTaskCard";
-import { Badge } from "@/components/ui/Badge";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Spinner } from "@/components/ui/Spinner";
 import { SwipeToCompleteCard } from "@/components/ui/SwipeToCompleteCard";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { getCompleteGesture, hasCategoriesEnabled, hasRoutinesEnabled } from "@/lib/auth/features";
-import { useAssignedTasks } from "@/lib/hooks/useAssignedTasks";
-import { useConnections } from "@/lib/hooks/useConnections";
 import { useRecurringTasks } from "@/lib/hooks/useRecurringTasks";
 import { useTasks } from "@/lib/hooks/useTasks";
 import type { Task } from "@/lib/supabase/types";
-import { cn } from "@/lib/utils/cn";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -52,15 +46,8 @@ export default function DashboardPage() {
     stopTimer,
     createRecurringTask,
   } = useRecurringTasks();
-  const { accepted: connections } = useConnections();
-  const { tasks: assignedTasks, retract: retractAssignedTask } = useAssignedTasks();
   const [category, setCategory] = useState<string | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-
-  const connectionEmailById = useMemo(
-    () => Object.fromEntries(connections.map((c) => [c.otherUserId, c.otherEmail])),
-    [connections]
-  );
 
   const completeGesture = getCompleteGesture(user);
   const categoriesEnabled = hasCategoriesEnabled(user);
@@ -130,7 +117,6 @@ export default function DashboardPage() {
                   onComplete={completeTask}
                   onDelete={deleteTask}
                   onEdit={setEditingTask}
-                  connectionEmailById={connectionEmailById}
                   emptyLabel="Keine überfälligen Aufgaben."
                 />
               </section>
@@ -190,7 +176,6 @@ export default function DashboardPage() {
                       onComplete={completeTask}
                       onDelete={deleteTask}
                       onEdit={setEditingTask}
-                      connectionEmailById={connectionEmailById}
                       emptyLabel=""
                     />
                   )}
@@ -209,51 +194,8 @@ export default function DashboardPage() {
                   onComplete={completeTask}
                   onDelete={deleteTask}
                   onEdit={setEditingTask}
-                  connectionEmailById={connectionEmailById}
                   emptyLabel=""
                 />
-              </section>
-            )}
-
-            {assignedTasks.length > 0 && (
-              <section>
-                <h2 className="mb-2 text-sm font-semibold text-white/70">
-                  Von dir vergeben · {assignedTasks.length}
-                </h2>
-                <div className="flex flex-col gap-3">
-                  {assignedTasks.map((task) => (
-                    <GlassCard key={task.id} className="flex items-center gap-3 py-3.5">
-                      <div className="min-w-0 flex-1">
-                        <p
-                          className={cn(
-                            "truncate text-[15px] font-semibold",
-                            task.status === "done"
-                              ? "text-white/50 line-through decoration-accent-400/60"
-                              : "text-white"
-                          )}
-                        >
-                          {task.title}
-                        </p>
-                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                          <Badge tone="neutral">
-                            {connectionEmailById[task.user_id] ?? "…"}
-                          </Badge>
-                          <Badge tone={task.status === "done" ? "accent" : "neutral"}>
-                            {task.status === "done" ? "Erledigt" : "Offen"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => retractAssignedTask(task.id)}
-                        aria-label={`Zuweisung "${task.title}" zurückziehen`}
-                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/25 transition-colors hover:text-danger-400"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </GlassCard>
-                  ))}
-                </div>
               </section>
             )}
           </>

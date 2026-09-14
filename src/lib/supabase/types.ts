@@ -4,7 +4,6 @@
 
 export type TaskStatus = "open" | "done";
 export type TaskSource = "manual" | "email" | "recurring_instance";
-export type ConnectionStatus = "pending" | "accepted";
 
 export interface Database {
   public: {
@@ -14,11 +13,6 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          /** Who created this task — differs from user_id when it was
-           * assigned to a connected user instead of self-created. Null only
-           * for pre-connections rows whose creator's account has since been
-           * deleted. */
-          created_by: string | null;
           title: string;
           description: string | null;
           category: string | null;
@@ -31,7 +25,6 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          created_by?: string | null;
           title: string;
           description?: string | null;
           category?: string | null;
@@ -179,30 +172,6 @@ export interface Database {
         };
         Update: Partial<Database["public"]["Tables"]["categories"]["Insert"]>;
       };
-      connections: {
-        Relationships: [];
-        Row: {
-          id: string;
-          requester_id: string;
-          requester_email: string;
-          recipient_id: string;
-          recipient_email: string;
-          status: ConnectionStatus;
-          created_at: string;
-          responded_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          requester_id: string;
-          requester_email: string;
-          recipient_id: string;
-          recipient_email: string;
-          status?: ConnectionStatus;
-          created_at?: string;
-          responded_at?: string | null;
-        };
-        Update: Partial<Database["public"]["Tables"]["connections"]["Insert"]>;
-      };
       api_tokens: {
         Relationships: [];
         Row: {
@@ -227,12 +196,7 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: {
-      find_user_id_by_email: {
-        Args: { p_email: string };
-        Returns: string | null;
-      };
-    };
+    Functions: Record<string, never>;
     Enums: {
       task_status: TaskStatus;
       task_source: TaskSource;
@@ -252,4 +216,3 @@ export type EmailTask = Database["public"]["Tables"]["email_tasks"]["Row"];
 export type EmailTaskWithContext = EmailTask & { task: Task };
 export type Category = Database["public"]["Tables"]["categories"]["Row"];
 export type ApiToken = Database["public"]["Tables"]["api_tokens"]["Row"];
-export type Connection = Database["public"]["Tables"]["connections"]["Row"];

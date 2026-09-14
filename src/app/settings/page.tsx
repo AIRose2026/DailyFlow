@@ -8,7 +8,6 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { ApiTokenManager } from "@/components/settings/ApiTokenManager";
 import { CategoryManager } from "@/components/settings/CategoryManager";
 import { CompleteGestureSelector } from "@/components/settings/CompleteGestureSelector";
-import { ConnectionsManager } from "@/components/settings/ConnectionsManager";
 import { DisplayNameEditor } from "@/components/settings/DisplayNameEditor";
 import { RoutinesToggle } from "@/components/settings/RoutinesToggle";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -43,8 +42,6 @@ export default function SettingsPage() {
         <CompleteGestureSelector />
 
         <CategoryManager />
-
-        <ConnectionsManager />
 
         <Link href="/archive">
           <GlassCard className="flex items-center gap-3 py-3.5">
